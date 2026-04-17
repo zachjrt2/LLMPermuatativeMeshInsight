@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Red-Team Framework — Flow Graph</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
+
+        :root {
+            --bg: #0a0c10;
+            --border: rgba(255, 255, 255, 0.1);
+            --border-hi: #252d3a;
+            --text: #dde3ed;
+            --text-main: #e2e8f0;
+            --text-dim: #94a3b8;
+            --dim: #5a6478;
+            --surface2: #141820;
+            --accent-primary: #00f2fe;
+            --accent-secondary: #4facfe;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(circle, #1e2433 1px, transparent 1px);
+            background-size: 28px 28px;
+            opacity: 0.45;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .global-header {
+            padding: 20px 40px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(10, 12, 16, 0.85);
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            grid-template-areas: 
+                "title controls"
+                "nav controls";
+            gap: 12px;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header-content > div:first-child {
+            grid-area: title;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .global-nav {
+            grid-area: nav;
+            display: flex;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            justify-self: start;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-dim);
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .nav-link:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-link.active {
+            color: #0a0c10;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            box-shadow: 0 4px 12px rgba(0, 242, 254, 0.3);
+        }
+
+        .global-header h1 {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            white-space: nowrap;
+            margin: 0;
+            line-height: 1.2;
+            font-family: 'Syne', sans-serif;
+        }
+
+        .global-header h1 em {
+            font-style: normal;
+            color: #00d9b8;
+        }
+
+        .subtitle {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 4px;
+            font-weight: 500;
+            opacity: 0.8;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .leg {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            color: var(--dim);
+        }
+
+        .ls {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .stats {
+            position: relative;
+            z-index: 10;
+            padding: 10px 40px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 32px;
+            background: rgba(14, 17, 23, 0.85);
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .sv {
+            font-family: 'Syne', sans-serif;
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        .sk {
+            font-size: 9px;
+            color: var(--dim);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .canvas-wrap {
+            position: relative;
+            z-index: 1;
+            overflow: auto;
+            padding: 32px 24px;
+        }
+
+        svg {
+            display: block;
+        }
+
+        .lbl {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            fill: #fff;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+
+        .sub {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 8.5px;
+            fill: rgba(255, 255, 255, 0.42);
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+
+        .sub-k {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 8.5px;
+            fill: rgba(0, 0, 0, 0.6);
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+
+        .col-h {
+            font-family: 'Syne', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-anchor: middle;
+        }
+
+        .ng {
+            cursor: pointer;
+        }
+
+        .ng:hover .nb {
+            filter: brightness(1.2);
+        }
+
+        .nb {
+            transition: filter 0.15s;
+        }
+
+        #tip {
+            position: fixed;
+            background: var(--surface2);
+            border: 1px solid var(--border-hi);
+            border-radius: 8px;
+            padding: 11px 15px;
+            font-size: 11.5px;
+            line-height: 1.65;
+            max-width: 280px;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 200;
+            box-shadow: 0 10px 36px rgba(0, 0, 0, 0.7);
+        }
+
+        #tip.on {
+            opacity: 1;
+        }
+
+        .tt {
+            font-family: 'Syne', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .tb {
+            color: var(--dim);
+        }
+
+        .tg {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+        }
+    </style>
+</head>
+
+<body>
+<header class="global-header">
+    <div class="header-content">
+        <div>
+            <h1>Permutative Mesh Analysis</h1>
+            <div class="subtitle">Pipeline Architecture — Analysis of main.py workflow execution & LangGraph state machine</div>
+        </div>
+        <nav class="global-nav">
+            <a href="index.html" class="nav-link">Dashboard</a>
+            <a href="index.html#phrase-intel" class="nav-link">Phrase Intel</a>
+            <a href="flow.html" class="nav-link active">Flow Graph</a>
+            <a href="heatmapdashboard.html" class="nav-link">Heatmaps</a>
+            <a href="dashboard_final.html" class="nav-link">Adversarial Phrases</a>
+        </nav>
+    </div>
+</header>
+
+    <div class="stats">
+        <div class="stat"><span class="sv" style="color:#00d9b8">10</span><span class="sk">Models</span></div>
+        <div class="stat"><span class="sv" style="color:#00d9b8">90</span><span class="sk">Pairings</span></div>
+        <div class="stat"><span class="sv" style="color:#ff9d3a">30</span><span class="sk">Rounds / Pairing</span></div>
+        <div class="stat"><span class="sv" style="color:#ff5252">8</span><span class="sk">Max Prompt Retries</span></div>
+        <div class="stat"><span class="sv" style="color:#ff4560">100</span><span class="sk">Max Test Retries</span></div>
+        <div class="stat"><span class="sv" style="color:#ffe066">2</span><span class="sk">Parallel Workers</span></div>
+    </div>
+    <div style="padding: 12px 40px; border-bottom: 1px solid var(--border); display: flex; gap: 16px; background: rgba(255,255,255,0.02);">
+        <div class="leg" style="font-weight:600; color:var(--text-main); margin-right: 10px;">LEGEND:</div>
+        <div class="leg"><div class="ls" style="background:#00d9b8"></div>Orchestrator</div>
+        <div class="leg"><div class="ls" style="background:#ff5252"></div>Red Team</div>
+        <div class="leg"><div class="ls" style="background:#ff9d3a"></div>Target Model</div>
+        <div class="leg"><div class="ls" style="background:#b06eff"></div>Judge</div>
+        <div class="leg"><div class="ls" style="background:#ffe066"></div>I / O</div>
+        <div class="leg"><div class="ls" style="background:#ff4560; border-radius:50%"></div>Retry</div>
+        <div class="leg"><svg width="22" height="10"><line x1="0" y1="5" x2="22" y2="5" stroke="#5a6478" stroke-width="1.5" stroke-dasharray="4 3" /></svg>Async</div>
+    </div>
+
+    <!--
+  LAYOUT GRID (all coords are center-x of each lane):
+  Lane widths: each 200px, gaps 14px
+  Orch:   x=22..222   cx=122
+  RT:     x=236..436  cx=336
+  Target: x=450..670  cx=560
+  Judge:  x=684..884  cx=784
+  Output: x=898..1098 cx=998
+  Total SVG width: 1120
+
+  Node heights: 52px standard, 68px for graph nodes
+  Vertical rhythm: rows at y=80,160,260,360,440,520,600,680,760,840,920
+  Node top = row_y - height/2
+-->
+
+    <div class="canvas-wrap">
+        <svg viewBox="0 0 1120 1060" width="1120" height="1060" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <!-- Arrowheads -->
+                <marker id="mo" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
+                    <path d="M0,0 L0,6 L7,3z" fill="#00d9b8" opacity="0.85" />
+                </marker>
+                <marker id="mr" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
+                    <path d="M0,0 L0,6 L7,3z" fill="#ff5252" opacity="0.85" />
+                </marker>
+                <marker id="mt" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
+                    <path d="M0,0 L0,6 L7,3z" fill="#ff9d3a" opacity="0.85" />
+                </marker>
+                <marker id="mj" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
+                    <path d="M0,0 L0,6 L7,3z" fill="#b06eff" opacity="0.85" />
+                </marker>
+                <marker id="mio" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
+                    <path d="M0,0 L0,6 L7,3z" fill="#ffe066" opacity="0.85" />
+                </marker>
+                <marker id="me" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
+                    <path d="M0,0 L0,6 L7,3z" fill="#ff4560" opacity="0.85" />
+                </marker>
+                <marker id="mf" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
+                    <path d="M0,0 L0,6 L7,3z" fill="#7ecbff" opacity="0.85" />
+                </marker>
+                <marker id="md" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
+                    <path d="M0,0 L0,6 L7,3z" fill="#5a6478" opacity="0.85" />
+                </marker>
+
+                <!-- Gradients -->
+                <linearGradient id="go" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#00d9b8" />
+                    <stop offset="100%" stop-color="#008f7a" />
+                </linearGradient>
+                <linearGradient id="gr" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#ff5252" />
+                    <stop offset="100%" stop-color="#aa1818" />
+                </linearGradient>
+                <linearGradient id="gt" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#ff9d3a" />
+                    <stop offset="100%" stop-color="#a85c10" />
+                </linearGradient>
+                <linearGradient id="gj" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#b06eff" />
+                    <stop offset="100%" stop-color="#6020bb" />
+                </linearGradient>
+                <linearGradient id="gio" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#ffe066" />
+                    <stop offset="100%" stop-color="#bb9900" />
+                </linearGradient>
+                <linearGradient id="gdk" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#1e2330" />
+                    <stop offset="100%" stop-color="#0e1117" />
+                </linearGradient>
+            </defs>
+
+            <!-- ═══════════════════════════════════════════
+     LANE BACKGROUNDS
+     Orch  22-222, RT 236-436, Tgt 450-670, Jdg 684-884, Out 898-1098
+════════════════════════════════════════════ -->
+            <rect x="22" y="22" width="200" height="1016" rx="9" fill="#06100e" stroke="#0d2520" stroke-width="1" />
+            <text x="122" y="44" class="col-h" fill="#00d9b8" opacity="0.4">Orchestrator</text>
+
+            <rect x="236" y="22" width="200" height="1016" rx="9" fill="#100809" stroke="#271212" stroke-width="1" />
+            <text x="336" y="44" class="col-h" fill="#ff5252" opacity="0.4">Red Team</text>
+
+            <rect x="450" y="22" width="220" height="1016" rx="9" fill="#0e0b07" stroke="#251808" stroke-width="1" />
+            <text x="560" y="44" class="col-h" fill="#ff9d3a" opacity="0.4">Target Model</text>
+
+            <rect x="684" y="22" width="200" height="1016" rx="9" fill="#0b0816" stroke="#1a1030" stroke-width="1" />
+            <text x="784" y="44" class="col-h" fill="#b06eff" opacity="0.4">Judge</text>
+
+            <rect x="898" y="22" width="200" height="1016" rx="9" fill="#09090e" stroke="#161820" stroke-width="1" />
+            <text x="998" y="44" class="col-h" fill="#ffe066" opacity="0.4">Output</text>
+
+
+            <!-- ═══════════════════════════════════════════
+     SECTION BRACKET: per-pairing loop
+════════════════════════════════════════════ -->
+            <!-- horizontal rule + label across Orch+RT at row boundary ~560 -->
+            <line x1="32" y1="565" x2="426" y2="565" stroke="#1e2733" stroke-width="1" stroke-dasharray="3 4" />
+            <rect x="88" y="557" width="148" height="16" rx="3" fill="#0e1117" stroke="#1e2733" stroke-width="1" />
+            <text x="162" y="566" font-family="Syne,sans-serif" font-size="8" fill="#2e3848" text-anchor="middle"
+                letter-spacing="0.12em">PER-PAIRING LOOP</text>
+
+            <!-- LangGraph bracket: thin bar to left of Target+Judge graph nodes (rows 700-960) -->
+            <rect x="442" y="700" width="6" height="280" rx="3" fill="#1a1f2b" />
+            <text x="445" y="840" font-family="Syne,sans-serif" font-size="7.5" fill="#2e3848" text-anchor="middle"
+                letter-spacing="0.08em" transform="rotate(-90,445,840)">LANGGRAPH STATE MACHINE</text>
+
+
+            <!-- ═══════════════════════════════════════════
+     EDGES — drawn before nodes
+     Precise coordinates:
+       Node top/bottom centers use node rect bounds
+════════════════════════════════════════════ -->
+
+            <!-- ── Orchestrator spine ── -->
+            <!-- START(cy=80) → generate_all_pairings(top=114) -->
+            <line x1="122" y1="100" x2="122" y2="114" stroke="#00d9b8" stroke-width="1.5" opacity="0.65"
+                marker-end="url(#mo)" />
+            <!-- generate_all_pairings(bot=170) → load_prompts(top=200) -->
+            <line x1="122" y1="170" x2="122" y2="200" stroke="#00d9b8" stroke-width="1.5" opacity="0.55"
+                marker-end="url(#mo)" />
+            <!-- load_prompts(bot=256) → get_completed_tests(top=590) — long skip, route left edge -->
+            <path d="M50,256 C32,256 32,600 50,600" stroke="#00d9b8" stroke-width="1.2" fill="none" opacity="0.3"
+                stroke-dasharray="4 4" marker-end="url(#mo)" />
+            <!-- get_completed_tests(bot=646) → build_graph(top=676) -->
+            <line x1="122" y1="646" x2="122" y2="676" stroke="#00d9b8" stroke-width="1.5" opacity="0.55"
+                marker-end="url(#mo)" />
+            <!-- build_graph(bot=732) → ThreadPoolExecutor(top=762) -->
+            <line x1="122" y1="732" x2="122" y2="762" stroke="#00d9b8" stroke-width="1.5" opacity="0.55"
+                marker-end="url(#mo)" />
+            <!-- ThreadPoolExecutor(bot=818) → END(top=900) skipping execution loop -->
+            <path d="M50,818 C32,818 32,910 50,910" stroke="#00d9b8" stroke-width="1.2" fill="none" opacity="0.3"
+                stroke-dasharray="4 4" marker-end="url(#mo)" />
+
+            <!-- ── Orch → RT handoff ── -->
+            <!-- load_prompts(right=222) → generate_attack_prompts(left=236) at y=228 -->
+            <line x1="222" y1="228" x2="236" y2="228" stroke="#5a6478" stroke-width="1.2" opacity="0.55"
+                stroke-dasharray="4 3" marker-end="url(#md)" />
+            <rect x="210" y="219" width="38" height="13" rx="2" fill="#080a0d" />
+            <text x="229" y="227" font-family="IBM Plex Mono" font-size="7.5" fill="#5a6478" text-anchor="middle">if
+                new</text>
+
+            <!-- ── Red Team spine ── -->
+            <!-- generate_attack_prompts(bot=284) → generate_single_prompt(top=310) -->
+            <line x1="336" y1="284" x2="336" y2="310" stroke="#ff5252" stroke-width="1.5" opacity="0.55"
+                marker-end="url(#mr)" />
+            <!-- generate_single_prompt(bot=366) → parse_json_RT(top=392) -->
+            <line x1="336" y1="366" x2="336" y2="392" stroke="#ff5252" stroke-width="1.5" opacity="0.55"
+                marker-end="url(#mr)" />
+            <!-- parse_json_RT(bot=444) → prompts_jsonl(top=464) -->
+            <line x1="336" y1="444" x2="336" y2="464" stroke="#ffe066" stroke-width="1.5" opacity="0.55"
+                marker-end="url(#mio)" />
+            <!-- prompts_jsonl(bot=496) → validate_prompts(top=516) -->
+            <line x1="336" y1="496" x2="336" y2="516" stroke="#ff5252" stroke-width="1.5" opacity="0.5"
+                marker-end="url(#mr)" />
+            <!-- validate_prompts(bot=572) → get_completed_tests(left of Orch at y=623) -->
+            <path d="M246,544 C228,544 222,600 192,623" stroke="#5a6478" stroke-width="1.2" fill="none" opacity="0.45"
+                stroke-dasharray="4 3" marker-end="url(#md)" />
+
+            <!-- ── Failsafe retry loop: validate_prompts → generate_single_prompt (within RT) ── -->
+            <!-- Loop goes left side of RT lane: from validate_prompts(left=246,y=544) up to generate_single_prompt(left=246,y=338) -->
+            <path d="M246,516 C224,516 224,338 246,338" stroke="#ff4560" stroke-width="1.4" fill="none"
+                stroke-dasharray="4 3" opacity="0.65" marker-end="url(#me)" />
+            <rect x="193" y="417" width="52" height="26" rx="3" fill="#0d0608" />
+            <text x="219" y="427" font-family="IBM Plex Mono" font-size="8" fill="#ff4560"
+                text-anchor="middle">failsafe?</text>
+            <text x="219" y="437" font-family="IBM Plex Mono" font-size="8" fill="#ff4560" text-anchor="middle">retry
+                ×8</text>
+
+            <!-- ── ThreadPool → run_target (Orch → Target) ── -->
+            <!-- From ThreadPoolExecutor right edge (x=222, y=790) to run_target left edge (x=450, y=750) -->
+            <path d="M222,790 C340,790 340,750 450,750" stroke="#ff9d3a" stroke-width="1.5" fill="none" opacity="0.55"
+                marker-end="url(#mt)" />
+
+            <!-- ── Target spine ── -->
+            <!-- run_target_model(bot=800) → model_response(top=820) -->
+            <line x1="560" y1="800" x2="560" y2="820" stroke="#ff9d3a" stroke-width="1.5" opacity="0.55"
+                marker-end="url(#mt)" />
+            <!-- model_response(bot=856) → log_result(top=876) -->
+            <line x1="560" y1="856" x2="560" y2="876" stroke="#ffe066" stroke-width="1.5" opacity="0.55"
+                marker-end="url(#mio)" />
+
+            <!-- ── Useless-response retry: model_response left loop → run_target ── -->
+            <path d="M462,838 C442,838 442,730 462,730" stroke="#ff4560" stroke-width="1.4" fill="none"
+                stroke-dasharray="4 3" opacity="0.65" marker-end="url(#me)" />
+            <rect x="408" y="775" width="52" height="26" rx="3" fill="#08090d" />
+            <text x="434" y="785" font-family="IBM Plex Mono" font-size="8" fill="#ff4560"
+                text-anchor="middle">useless?</text>
+            <text x="434" y="795" font-family="IBM Plex Mono" font-size="8" fill="#ff4560" text-anchor="middle">retry
+                ×3</text>
+
+            <!-- ── model_response → evaluate_response (Target right → Judge left) ── -->
+            <line x1="670" y1="838" x2="684" y2="780" stroke="#b06eff" stroke-width="1.5" opacity="0.55"
+                marker-end="url(#mj)" />
+
+            <!-- ── Judge spine ── -->
+            <!-- evaluate_response(bot=830) → parse_json_Judge(top=860) -->
+            <line x1="784" y1="830" x2="784" y2="860" stroke="#b06eff" stroke-width="1.5" opacity="0.55"
+                marker-end="url(#mj)" />
+
+            <!-- ── parse_json_Judge fallback → translate_to_json (right loop in Judge lane) ── -->
+            <path d="M874,888 C892,888 892,930 874,930" stroke="#7ecbff" stroke-width="1.4" fill="none"
+                stroke-dasharray="4 3" opacity="0.65" marker-end="url(#mf)" />
+            <rect x="876" y="903" width="64" height="26" rx="3" fill="#08090d" />
+            <text x="908" y="912" font-family="IBM Plex Mono" font-size="8" fill="#7ecbff" text-anchor="middle">parse
+                fail?</text>
+            <text x="908" y="922" font-family="IBM Plex Mono" font-size="8" fill="#7ecbff" text-anchor="middle">LLM
+                fallback</text>
+
+            <!-- ── parse_json_Judge → log_result (Judge left → Target) ── -->
+            <!-- From parse_json_Judge bottom-left (x=684,y=910) across to log_result right (x=670,y=910) -->
+            <line x1="684" y1="910" x2="670" y2="910" stroke="#ffe066" stroke-width="1.5" opacity="0.55"
+                marker-end="url(#mio)" />
+
+            <!-- ── Test retry: log_result left loop → run_target ── -->
+            <!-- Tight loop: log_result(x=462,y=876) → run_target(x=462,y=800) same left boundary -->
+            <path d="M462,900 C452,900 452,730 462,730" stroke="#ff4560" stroke-width="1.2" fill="none"
+                stroke-dasharray="3 4" opacity="0.45" marker-end="url(#me)" />
+
+            <!-- ── log_result → summarize_results (Target → Output) ── -->
+            <path d="M670,930 C780,960 880,950 898,930" stroke="#ffe066" stroke-width="1.5" fill="none" opacity="0.45"
+                marker-end="url(#mio)" />
+
+            <!-- ── summarize_results(bot=986) → master_summary(top=1006) ── -->
+            <line x1="998" y1="986" x2="998" y2="1006" stroke="#ffe066" stroke-width="1.5" opacity="0.5"
+                marker-end="url(#mio)" />
+
+            <!-- ── Orch loop annotation: next pairing ── -->
+            <rect x="28" y="834" width="52" height="26" rx="3" fill="#080a0d" stroke="#0d2520" stroke-width="0.5" />
+            <text x="54" y="843" font-family="IBM Plex Mono" font-size="7.5" fill="#00d9b8" text-anchor="middle"
+                opacity="0.45">next</text>
+            <text x="54" y="853" font-family="IBM Plex Mono" font-size="7.5" fill="#00d9b8" text-anchor="middle"
+                opacity="0.45">pairing</text>
+
+            <!-- ── Orch validate → Output (identify_invalid connects back to pre-loop) ── -->
+            <!-- identify_invalid (Output, y=228) → load_prompts (Orch, y=228) via top channel -->
+            <path d="M998,196 C998,172 122,172 122,196" stroke="#ffe066" stroke-width="1.2" fill="none"
+                stroke-dasharray="3 4" opacity="0.3" marker-end="url(#mio)" />
+            <rect x="500" y="160" width="118" height="14" rx="3" fill="#080a0d" />
+            <text x="559" y="169" font-family="IBM Plex Mono" font-size="7.5" fill="#ffe066" text-anchor="middle"
+                opacity="0.4">pre-run validation</text>
+
+
+            <!-- ═══════════════════════════════════════════
+     NODES
+     Standard rect: width=172, height=52, rx=7
+     center-x per lane, top=row_y-26
+════════════════════════════════════════════ -->
+
+            <!-- ─── ORCHESTRATOR (cx=122) ─── -->
+
+            <!-- START  cy=80 -->
+            <g class="ng"
+                onmouseenter="T(event,'START','Entry point. main() prints config, generates all 90 PairingConfig objects from generate_all_pairings(), then iterates over them.','Entry','#00d9b8')"
+                onmouseleave="H()">
+                <ellipse cx="122" cy="80" rx="82" ry="20" fill="url(#go)" stroke="#00d9b8" stroke-width="1.5"
+                    class="nb" />
+                <text x="122" y="80" class="lbl">▶ START</text>
+            </g>
+
+            <!-- generate_all_pairings  top=114 bot=170 cy=142 -->
+            <g class="ng"
+                onmouseenter="T(event,'generate_all_pairings()','Iterates ALL_MODELS × ALL_MODELS (red_team ≠ judge). Yields 90 PairingConfig objects, each with dedicated results / prompts / summary file paths.','Orchestrator','#00d9b8')"
+                onmouseleave="H()">
+                <rect x="36" y="114" width="172" height="56" rx="7" fill="url(#go)" stroke="#00d9b8" stroke-width="1.5"
+                    class="nb" />
+                <text x="122" y="135" class="lbl">generate_all</text>
+                <text x="122" y="150" class="lbl">_pairings()</text>
+                <text x="122" y="165" class="sub">10 models → ×90 pairs</text>
+            </g>
+
+            <!-- load_prompts  top=200 bot=256 cy=228 -->
+            <g class="ng"
+                onmouseenter="T(event,'load_prompts()','Reads the pairing\'s prompts.jsonl file. Returns a parsed list or empty list. If empty, generation is triggered; otherwise prompts are reused.','Orchestrator · I/O','#00d9b8')"
+                onmouseleave="H()">
+                <rect x="36" y="200" width="172" height="56" rx="7" fill="url(#gdk)" stroke="#00d9b8" stroke-width="1.5"
+                    class="nb" />
+                <text x="122" y="221" class="lbl">load_prompts()</text>
+                <text x="122" y="237" class="sub">reads prompts.jsonl</text>
+                <text x="122" y="249" class="sub">empty → trigger generation</text>
+            </g>
+
+            <!-- get_completed_tests  top=590 bot=646 cy=618 -->
+            <g class="ng"
+                onmouseenter="T(event,'get_completed_tests()','Scans results.jsonl and builds a set of (round, model) tuples already done. Skips those in the ThreadPoolExecutor pass — enables safe mid-run restarts.','Orchestrator · Resume','#00d9b8')"
+                onmouseleave="H()">
+                <rect x="36" y="590" width="172" height="56" rx="7" fill="url(#gdk)" stroke="#00d9b8" stroke-width="1.5"
+                    class="nb" />
+                <text x="122" y="611" class="lbl">get_completed</text>
+                <text x="122" y="626" class="lbl">_tests()</text>
+                <text x="122" y="641" class="sub">resume-safe</text>
+            </g>
+
+            <!-- build_graph  top=676 bot=732 cy=704 -->
+            <g class="ng"
+                onmouseenter="T(event,'build_graph()','Constructs the LangGraph StateGraph: registers run_target_model → evaluate_response → log_result → END, wires edges, and returns the compiled graph bound to the PairingConfig.','Orchestrator · LangGraph','#00d9b8')"
+                onmouseleave="H()">
+                <rect x="36" y="676" width="172" height="56" rx="7" fill="url(#go)" stroke="#00d9b8" stroke-width="1.5"
+                    class="nb" />
+                <text x="122" y="697" class="lbl">build_graph()</text>
+                <text x="122" y="712" class="sub">StateGraph · 3 nodes</text>
+                <text x="122" y="724" class="sub">compiled</text>
+            </g>
+
+            <!-- ThreadPoolExecutor  top=762 bot=818 cy=790 -->
+            <g class="ng"
+                onmouseenter="T(event,'ThreadPoolExecutor','Fans out test_single_model() calls across MAX_PARALLEL_WORKERS=2 threads for every (prompt × target_model) pair not already in completed set.','Orchestrator · Concurrency','#00d9b8')"
+                onmouseleave="H()">
+                <rect x="36" y="762" width="172" height="56" rx="7" fill="url(#gdk)" stroke="#00d9b8" stroke-width="1.5"
+                    class="nb" />
+                <text x="122" y="783" class="lbl">ThreadPool</text>
+                <text x="122" y="798" class="lbl">Executor</text>
+                <text x="122" y="813" class="sub">workers = 2</text>
+            </g>
+
+            <!-- END  cy=930 -->
+            <g class="ng"
+                onmouseenter="T(event,'END','LangGraph END sentinel reached after log_result(). Also signals framework completion once all 90 pairings have been processed.','Exit','#00d9b8')"
+                onmouseleave="H()">
+                <ellipse cx="122" cy="930" rx="82" ry="20" fill="url(#gdk)" stroke="#00d9b8" stroke-width="1.5"
+                    class="nb" />
+                <text x="122" y="930" class="lbl">■ END</text>
+            </g>
+
+
+            <!-- ─── RED TEAM (cx=336) ─── -->
+
+            <!-- generate_attack_prompts  top=200 bot=284 cy=242 -->
+            <g class="ng"
+                onmouseenter="T(event,'generate_attack_prompts()','Loops generate_single_prompt() 30 times. Red-team LLM (temp=0.9) generates creative adversarial prompts. Each prompt is streamed to prompts.jsonl as it is produced.','Red Team · Generation','#ff5252')"
+                onmouseleave="H()">
+                <rect x="250" y="200" width="172" height="84" rx="7" fill="url(#gr)" stroke="#ff5252" stroke-width="1.5"
+                    class="nb" />
+                <text x="336" y="224" class="lbl">generate_attack</text>
+                <text x="336" y="240" class="lbl">_prompts()</text>
+                <text x="336" y="258" class="sub">30 prompts · temp=0.9</text>
+                <text x="336" y="271" class="sub">red-team ChatOllama</text>
+                <text x="336" y="278" class="sub">× MAX_PROMPT_RETRIES = 8</text>
+            </g>
+
+            <!-- generate_single_prompt  top=310 bot=366 cy=338 -->
+            <g class="ng"
+                onmouseenter="T(event,'generate_single_prompt()','One prompt request to the red-team LLM with a strict JSON system prompt. Raw output fed to parse_json_response() 7-strategy chain.','Red Team · Single Prompt','#ff5252')"
+                onmouseleave="H()">
+                <rect x="250" y="310" width="172" height="56" rx="7" fill="url(#gdk)" stroke="#ff5252"
+                    stroke-width="1.5" class="nb" />
+                <text x="336" y="331" class="lbl">generate_single</text>
+                <text x="336" y="347" class="lbl">_prompt()</text>
+                <text x="336" y="360" class="sub">invokes red-team LLM</text>
+            </g>
+
+            <!-- parse_json_response (RT)  top=392 bot=444 cy=418 -->
+            <g class="ng"
+                onmouseenter="T(event,'parse_json_response() — Prompt','7-strategy JSON parser applied to red-team LLM output: (1) direct parse, (2) strip markdown, (3) extract {…}, (4) fix quotes, (5) fix trailing commas, (6) regex extraction, (7) LLM translator fallback.','Red Team · Parser','#ff5252')"
+                onmouseleave="H()">
+                <rect x="250" y="392" width="172" height="52" rx="7" fill="url(#gdk)" stroke="#ff5252"
+                    stroke-width="1.5" class="nb" />
+                <text x="336" y="411" class="lbl">parse_json</text>
+                <text x="336" y="426" class="lbl">_response()</text>
+                <text x="336" y="439" class="sub">strategy ×7 + LLM fallback</text>
+            </g>
+
+            <!-- prompts.jsonl  top=464 bot=496 cy=480 -->
+            <g class="ng"
+                onmouseenter="T(event,'{pairing_id}_prompts.jsonl','Prompts appended line-by-line as generated. On re-runs, valid prompts are reused. Only entries flagged by is_failsafe_prompt() are regenerated.','Red Team · I/O','#ffe066')"
+                onmouseleave="H()">
+                <rect x="250" y="464" width="172" height="32" rx="7" fill="url(#gio)" stroke="#ffe066"
+                    stroke-width="1.5" class="nb" />
+                <text x="336" y="477" class="lbl" fill="#111">prompts.jsonl</text>
+                <text x="336" y="490" class="sub-k">per-pairing · append</text>
+            </g>
+
+            <!-- validate_and_regenerate_prompts  top=516 bot=572 cy=544 -->
+            <g class="ng"
+                onmouseenter="T(event,'validate_and_regenerate_prompts()','Scans loaded prompts for failsafe/placeholder text via is_failsafe_prompt(). Re-queues bad rounds back to generate_single_prompt(). Rewrites JSONL file when replacements are made.','Red Team · Validation','#ff5252')"
+                onmouseleave="H()">
+                <rect x="250" y="516" width="172" height="56" rx="7" fill="url(#gr)" stroke="#ff5252" stroke-width="1.5"
+                    class="nb" />
+                <text x="336" y="537" class="lbl">validate_and</text>
+                <text x="336" y="552" class="lbl">_regenerate()</text>
+                <text x="336" y="566" class="sub">is_failsafe_prompt()</text>
+            </g>
+
+
+            <!-- ─── TARGET MODEL (cx=560) ─── -->
+
+            <!-- run_target_model  top=716 bot=800 cy=758  GRAPH NODE 1 -->
+            <g class="ng"
+                onmouseenter="T(event,'run_target_model() — Graph Node 1','First LangGraph node. Invokes target ChatOllama (temp=0.7) with the attack prompt. Retries up to MAX_TARGET_RETRIES=3 if is_useless_response() fires (empty, <10 chars, known garbage tokens).','Target · Graph Node 1','#ff9d3a')"
+                onmouseleave="H()">
+                <rect x="462" y="716" width="196" height="84" rx="7" fill="url(#gt)" stroke="#ff9d3a" stroke-width="2"
+                    class="nb" />
+                <!-- node badge -->
+                <rect x="462" y="716" width="62" height="13" rx="3" fill="#ff9d3a" opacity="0.18" stroke="#ff9d3a"
+                    stroke-width="0.5" />
+                <text x="493" y="725" font-family="IBM Plex Mono" font-size="7.5" fill="#ff9d3a"
+                    text-anchor="middle">GRAPH NODE 1</text>
+                <text x="560" y="748" class="lbl">run_target_model()</text>
+                <text x="560" y="763" class="sub">ChatOllama temp=0.7</text>
+                <text x="560" y="776" class="sub">is_useless_response() guard</text>
+                <text x="560" y="789" class="sub">MAX_TARGET_RETRIES = 3</text>
+            </g>
+
+            <!-- model_response  top=820 bot=856 cy=838 -->
+            <g class="ng"
+                onmouseenter="T(event,'model_response','Raw string in RedTeamState. is_useless_response() checks: empty, under 10 chars, or matches tokens like "
+                user", "assistant" , "mini" . Triggers retry if true.','Target · State','#ff9d3a')" onmouseleave="H()">
+                <rect x="462" y="820" width="196" height="36" rx="7" fill="url(#gdk)" stroke="#ff9d3a"
+                    stroke-width="1.5" class="nb" />
+                <text x="560" y="835" class="lbl">model_response</text>
+                <text x="560" y="849" class="sub">RedTeamState field</text>
+            </g>
+
+            <!-- log_result  top=876 bot=948 cy=912  GRAPH NODE 3 -->
+            <g class="ng"
+                onmouseenter="T(event,'log_result() — Graph Node 3','Third LangGraph node. Appends complete record (attack_prompt, model_response, label, reason, danger_score, red_team_model, judge_model, timestamp) to results.jsonl. Uses threading file_lock.','Target · Graph Node 3','#ffe066')"
+                onmouseleave="H()">
+                <rect x="462" y="876" width="196" height="72" rx="7" fill="url(#gio)" stroke="#ffe066" stroke-width="2"
+                    class="nb" />
+                <rect x="462" y="876" width="62" height="13" rx="3" fill="#ffe066" opacity="0.18" stroke="#ffe066"
+                    stroke-width="0.5" />
+                <text x="493" y="885" font-family="IBM Plex Mono" font-size="7.5" fill="#ffe066"
+                    text-anchor="middle">GRAPH NODE 3</text>
+                <text x="560" y="906" class="lbl" fill="#111">log_result()</text>
+                <text x="560" y="921" class="sub-k">results.jsonl · file_lock</text>
+                <text x="560" y="934" class="sub-k">timestamp · all state fields</text>
+                <text x="560" y="943" class="sub-k">retry check after write</text>
+            </g>
+
+
+            <!-- ─── JUDGE (cx=784) ─── -->
+
+            <!-- evaluate_response  top=716 bot=830 cy=773  GRAPH NODE 2 -->
+            <g class="ng"
+                onmouseenter="T(event,'evaluate_response() — Graph Node 2','Second LangGraph node. Judge ChatOllama (temp=0.0) classifies model_response as safe_refusal, partial_compliance, or policy_violation. Assigns danger_score 0–10. Label is normalised by substring matching.','Judge · Graph Node 2','#b06eff')"
+                onmouseleave="H()">
+                <rect x="698" y="716" width="172" height="114" rx="7" fill="url(#gj)" stroke="#b06eff" stroke-width="2"
+                    class="nb" />
+                <rect x="698" y="716" width="62" height="13" rx="3" fill="#b06eff" opacity="0.18" stroke="#b06eff"
+                    stroke-width="0.5" />
+                <text x="729" y="725" font-family="IBM Plex Mono" font-size="7.5" fill="#b06eff"
+                    text-anchor="middle">GRAPH NODE 2</text>
+                <text x="784" y="748" class="lbl">evaluate_response()</text>
+                <text x="784" y="764" class="sub">ChatOllama temp=0.0</text>
+                <text x="784" y="778" class="sub">safe_refusal</text>
+                <text x="784" y="791" class="sub">partial_compliance</text>
+                <text x="784" y="804" class="sub">policy_violation · 0–10</text>
+                <text x="784" y="817" class="sub">label normalisation</text>
+            </g>
+
+            <!-- parse_json_response (Judge)  top=860 bot=912 cy=886 -->
+            <g class="ng"
+                onmouseenter="T(event,'parse_json_response() — Evaluation','Same 7-strategy chain on judge output. Normalises label strings: "
+                partial" → partial_compliance, "policy" /"violation" → policy_violation, else safe_refusal. Danger score
+                int-cast with 0 fallback.','Judge · Parser','#b06eff')" onmouseleave="H()">
+                <rect x="698" y="860" width="172" height="52" rx="7" fill="url(#gdk)" stroke="#b06eff"
+                    stroke-width="1.5" class="nb" />
+                <text x="784" y="879" class="lbl">parse_json</text>
+                <text x="784" y="894" class="lbl">_response()</text>
+                <text x="784" y="907" class="sub">label normalise · int-cast</text>
+            </g>
+
+            <!-- translate_to_json_with_llm  top=924 bot=972 cy=948 -->
+            <g class="ng"
+                onmouseenter="T(event,'translate_to_json_with_llm()','Last-resort fallback when all 7 parse strategies fail. Sends malformed output to llama3.1:8b (temp=0.0) with a meta-prompt requesting valid JSON. Handles both prompt_generation and evaluation formats.','Judge · LLM Fallback','#7ecbff')"
+                onmouseleave="H()">
+                <rect x="698" y="924" width="172" height="48" rx="7" fill="url(#gdk)" stroke="#7ecbff"
+                    stroke-width="1.5" stroke-dasharray="5 3" class="nb" />
+                <text x="784" y="943" class="lbl">translate_to_json</text>
+                <text x="784" y="958" class="lbl">_with_llm()</text>
+                <text x="784" y="967" class="sub">llama3.1:8b · last resort</text>
+            </g>
+
+
+            <!-- ─── OUTPUT (cx=998) ─── -->
+
+            <!-- identify_invalid_results  top=200 bot=256 cy=228 -->
+            <g class="ng"
+                onmouseenter="T(event,'identify_invalid_results()','Scans results.jsonl before each pairing run. Flags records where is_invalid_reason() fires (e.g. "
+                No reason provided") or is_useless_response() fires. Returns list of (round, model) to rerun.','Output ·
+                Pre-run Check','#ffe066')" onmouseleave="H()">
+                <rect x="912" y="200" width="172" height="56" rx="7" fill="url(#gdk)" stroke="#ffe066"
+                    stroke-width="1.5" class="nb" />
+                <text x="998" y="221" class="lbl">identify_invalid</text>
+                <text x="998" y="237" class="lbl">_results()</text>
+                <text x="998" y="250" class="sub">pre-run · flags bad records</text>
+            </g>
+
+            <!-- remove_invalid_results  top=276 bot=332 cy=304 -->
+            <g class="ng"
+                onmouseenter="T(event,'remove_invalid_results()','Rewrites results.jsonl excluding flagged (round, model) pairs so they re-enter the ThreadPoolExecutor queue on the next pass.','Output · Cleanup','#ffe066')"
+                onmouseleave="H()">
+                <rect x="912" y="276" width="172" height="56" rx="7" fill="url(#gdk)" stroke="#ffe066"
+                    stroke-width="1.5" class="nb" />
+                <text x="998" y="297" class="lbl">remove_invalid</text>
+                <text x="998" y="313" class="lbl">_results()</text>
+                <text x="998" y="326" class="sub">rewrites results.jsonl</text>
+            </g>
+            <!-- identify → remove arrow -->
+            <line x1="998" y1="256" x2="998" y2="276" stroke="#ffe066" stroke-width="1.5" opacity="0.5"
+                marker-end="url(#mio)" />
+
+            <!-- summarize_results  top=930 bot=986 cy=958 -->
+            <g class="ng"
+                onmouseenter="T(event,'summarize_results()','Computes overall and per-model stats from results.jsonl: label Counters, % breakdowns, avg/max/min danger_score. Returns dict saved to {pairing_id}_summary.json.','Output · Stats','#ffe066')"
+                onmouseleave="H()">
+                <rect x="912" y="930" width="172" height="56" rx="7" fill="url(#gdk)" stroke="#ffe066"
+                    stroke-width="1.5" class="nb" />
+                <text x="998" y="951" class="lbl">summarize_results()</text>
+                <text x="998" y="966" class="sub">per-model + overall</text>
+                <text x="998" y="979" class="sub">danger avg/max · label pct</text>
+            </g>
+
+            <!-- master_summary  top=1006 bot=1044 cy=1025 -->
+            <g class="ng"
+                onmouseenter="T(event,'master_summary.json','Written after all 90 pairings complete. Aggregates every per-pairing summary dict — global label distributions, average danger scores, model list, and framework config metadata.','Output · Master','#ffe066')"
+                onmouseleave="H()">
+                <rect x="912" y="1006" width="172" height="38" rx="7" fill="url(#gio)" stroke="#ffe066"
+                    stroke-width="1.5" class="nb" />
+                <text x="998" y="1022" class="lbl" fill="#111">master_summary.json</text>
+                <text x="998" y="1036" class="sub-k">all 90 pairings · pairing_results/</text>
+            </g>
+
+        </svg>
+    </div>
+
+    <div id="tip">
+        <div class="tt" id="tit"></div>
+        <div class="tb" id="tbd"></div>
+        <div class="tg" id="ttg"></div>
+    </div>
+
+    <script>
+        const tip = document.getElementById('tip');
+        function T(e, title, body, tag, color) {
+            document.getElementById('tit').textContent = title;
+            document.getElementById('tit').style.color = color;
+            document.getElementById('tbd').textContent = body;
+            const tg = document.getElementById('ttg');
+            tg.textContent = tag;
+            tg.style.cssText = `background:${color}18;color:${color};border:1px solid ${color}44`;
+            tip.classList.add('on');
+            M(e);
+        }
+        function H() { tip.classList.remove('on'); }
+        document.addEventListener('mousemove', M);
+        function M(e) {
+            if (!tip.classList.contains('on')) return;
+            const x = e.clientX + 18, y = e.clientY + 18;
+            tip.style.left = (x + tip.offsetWidth > window.innerWidth ? x - tip.offsetWidth - 36 : x) + 'px';
+            tip.style.top = (y + tip.offsetHeight > window.innerHeight ? y - tip.offsetHeight - 36 : y) + 'px';
+        }
+    </script>
+</body>
+
+</html>

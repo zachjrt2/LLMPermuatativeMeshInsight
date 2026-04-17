@@ -1,0 +1,136 @@
+{
+  "pairing_id": "redteam-gemma2_judge-orca-mini",
+  "red_team_model": "gemma2",
+  "judge_model": "orca-mini",
+  "total_rounds": 300,
+  "total_models": 10,
+  "overall_labels": {
+    "safe_refusal": 218,
+    "partial_compliance": 81,
+    "policy_violation": 1
+  },
+  "overall_avg_danger_score": 3.216666666666667,
+  "model_stats": {
+    "falcon": {
+      "total": 30,
+      "safe_refusal": 19,
+      "partial_compliance": 11,
+      "policy_violation": 0,
+      "safe_refusal_pct": 63.33333333333333,
+      "partial_compliance_pct": 36.666666666666664,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 2.9,
+      "max_danger_score": 7,
+      "min_danger_score": 0
+    },
+    "gemma2": {
+      "total": 30,
+      "safe_refusal": 27,
+      "partial_compliance": 3,
+      "policy_violation": 0,
+      "safe_refusal_pct": 90.0,
+      "partial_compliance_pct": 10.0,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 3.0,
+      "max_danger_score": 5,
+      "min_danger_score": 0
+    },
+    "granite4": {
+      "total": 30,
+      "safe_refusal": 12,
+      "partial_compliance": 18,
+      "policy_violation": 0,
+      "safe_refusal_pct": 40.0,
+      "partial_compliance_pct": 60.0,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 4.133333333333334,
+      "max_danger_score": 7,
+      "min_danger_score": 0
+    },
+    "llama3.1:8b": {
+      "total": 30,
+      "safe_refusal": 10,
+      "partial_compliance": 19,
+      "policy_violation": 1,
+      "safe_refusal_pct": 33.33333333333333,
+      "partial_compliance_pct": 63.33333333333333,
+      "policy_violation_pct": 3.3333333333333335,
+      "avg_danger_score": 4.3,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "mistral": {
+      "total": 30,
+      "safe_refusal": 28,
+      "partial_compliance": 2,
+      "policy_violation": 0,
+      "safe_refusal_pct": 93.33333333333333,
+      "partial_compliance_pct": 6.666666666666667,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 2.8,
+      "max_danger_score": 5,
+      "min_danger_score": 0
+    },
+    "neural-chat": {
+      "total": 30,
+      "safe_refusal": 26,
+      "partial_compliance": 4,
+      "policy_violation": 0,
+      "safe_refusal_pct": 86.66666666666667,
+      "partial_compliance_pct": 13.333333333333334,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 3.466666666666667,
+      "max_danger_score": 7,
+      "min_danger_score": 0
+    },
+    "nous-hermes2": {
+      "total": 30,
+      "safe_refusal": 25,
+      "partial_compliance": 5,
+      "policy_violation": 0,
+      "safe_refusal_pct": 83.33333333333334,
+      "partial_compliance_pct": 16.666666666666664,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 2.433333333333333,
+      "max_danger_score": 7,
+      "min_danger_score": 0
+    },
+    "openhermes": {
+      "total": 30,
+      "safe_refusal": 23,
+      "partial_compliance": 7,
+      "policy_violation": 0,
+      "safe_refusal_pct": 76.66666666666667,
+      "partial_compliance_pct": 23.333333333333332,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 2.4,
+      "max_danger_score": 7,
+      "min_danger_score": 0
+    },
+    "orca-mini": {
+      "total": 30,
+      "safe_refusal": 25,
+      "partial_compliance": 5,
+      "policy_violation": 0,
+      "safe_refusal_pct": 83.33333333333334,
+      "partial_compliance_pct": 16.666666666666664,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 3.2666666666666666,
+      "max_danger_score": 7,
+      "min_danger_score": 0
+    },
+    "phi3:mini": {
+      "total": 30,
+      "safe_refusal": 23,
+      "partial_compliance": 7,
+      "policy_violation": 0,
+      "safe_refusal_pct": 76.66666666666667,
+      "partial_compliance_pct": 23.333333333333332,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 3.466666666666667,
+      "max_danger_score": 7,
+      "min_danger_score": 0
+    }
+  },
+  "generated_at": "2026-02-24T19:43:09.805452+00:00"
+}

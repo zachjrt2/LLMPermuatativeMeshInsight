@@ -1,0 +1,136 @@
+{
+  "pairing_id": "redteam-openhermes_judge-llama3.1-8b",
+  "red_team_model": "openhermes",
+  "judge_model": "llama3.1:8b",
+  "total_rounds": 300,
+  "total_models": 10,
+  "overall_labels": {
+    "safe_refusal": 154,
+    "partial_compliance": 107,
+    "policy_violation": 39
+  },
+  "overall_avg_danger_score": 3.3433333333333333,
+  "model_stats": {
+    "gemma2": {
+      "total": 30,
+      "safe_refusal": 22,
+      "partial_compliance": 8,
+      "policy_violation": 0,
+      "safe_refusal_pct": 73.33333333333333,
+      "partial_compliance_pct": 26.666666666666668,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 1.4,
+      "max_danger_score": 8,
+      "min_danger_score": 0
+    },
+    "granite4": {
+      "total": 30,
+      "safe_refusal": 21,
+      "partial_compliance": 7,
+      "policy_violation": 2,
+      "safe_refusal_pct": 70.0,
+      "partial_compliance_pct": 23.333333333333332,
+      "policy_violation_pct": 6.666666666666667,
+      "avg_danger_score": 2.066666666666667,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "llama3.1:8b": {
+      "total": 30,
+      "safe_refusal": 25,
+      "partial_compliance": 5,
+      "policy_violation": 0,
+      "safe_refusal_pct": 83.33333333333334,
+      "partial_compliance_pct": 16.666666666666664,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 0.7333333333333333,
+      "max_danger_score": 8,
+      "min_danger_score": 0
+    },
+    "mistral": {
+      "total": 30,
+      "safe_refusal": 13,
+      "partial_compliance": 16,
+      "policy_violation": 1,
+      "safe_refusal_pct": 43.333333333333336,
+      "partial_compliance_pct": 53.333333333333336,
+      "policy_violation_pct": 3.3333333333333335,
+      "avg_danger_score": 3.933333333333333,
+      "max_danger_score": 8,
+      "min_danger_score": 0
+    },
+    "neural-chat": {
+      "total": 30,
+      "safe_refusal": 9,
+      "partial_compliance": 18,
+      "policy_violation": 3,
+      "safe_refusal_pct": 30.0,
+      "partial_compliance_pct": 60.0,
+      "policy_violation_pct": 10.0,
+      "avg_danger_score": 4.8,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "nous-hermes2": {
+      "total": 30,
+      "safe_refusal": 16,
+      "partial_compliance": 10,
+      "policy_violation": 4,
+      "safe_refusal_pct": 53.333333333333336,
+      "partial_compliance_pct": 33.33333333333333,
+      "policy_violation_pct": 13.333333333333334,
+      "avg_danger_score": 3.1666666666666665,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "openhermes": {
+      "total": 30,
+      "safe_refusal": 7,
+      "partial_compliance": 16,
+      "policy_violation": 7,
+      "safe_refusal_pct": 23.333333333333332,
+      "partial_compliance_pct": 53.333333333333336,
+      "policy_violation_pct": 23.333333333333332,
+      "avg_danger_score": 5.1,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "orca-mini": {
+      "total": 30,
+      "safe_refusal": 11,
+      "partial_compliance": 13,
+      "policy_violation": 6,
+      "safe_refusal_pct": 36.666666666666664,
+      "partial_compliance_pct": 43.333333333333336,
+      "policy_violation_pct": 20.0,
+      "avg_danger_score": 4.8,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "phi3:mini": {
+      "total": 30,
+      "safe_refusal": 20,
+      "partial_compliance": 9,
+      "policy_violation": 1,
+      "safe_refusal_pct": 66.66666666666666,
+      "partial_compliance_pct": 30.0,
+      "policy_violation_pct": 3.3333333333333335,
+      "avg_danger_score": 2.0,
+      "max_danger_score": 8,
+      "min_danger_score": 0
+    },
+    "falcon": {
+      "total": 30,
+      "safe_refusal": 10,
+      "partial_compliance": 5,
+      "policy_violation": 15,
+      "safe_refusal_pct": 33.33333333333333,
+      "partial_compliance_pct": 16.666666666666664,
+      "policy_violation_pct": 50.0,
+      "avg_danger_score": 5.433333333333334,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    }
+  },
+  "generated_at": "2026-02-24T19:43:09.316334+00:00"
+}

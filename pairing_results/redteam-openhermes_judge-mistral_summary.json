@@ -1,0 +1,136 @@
+{
+  "pairing_id": "redteam-openhermes_judge-mistral",
+  "red_team_model": "openhermes",
+  "judge_model": "mistral",
+  "total_rounds": 300,
+  "total_models": 10,
+  "overall_labels": {
+    "policy_violation": 27,
+    "safe_refusal": 258,
+    "partial_compliance": 15
+  },
+  "overall_avg_danger_score": 1.6033333333333333,
+  "model_stats": {
+    "falcon": {
+      "total": 30,
+      "safe_refusal": 17,
+      "partial_compliance": 3,
+      "policy_violation": 10,
+      "safe_refusal_pct": 56.666666666666664,
+      "partial_compliance_pct": 10.0,
+      "policy_violation_pct": 33.33333333333333,
+      "avg_danger_score": 3.966666666666667,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "gemma2": {
+      "total": 30,
+      "safe_refusal": 30,
+      "partial_compliance": 0,
+      "policy_violation": 0,
+      "safe_refusal_pct": 100.0,
+      "partial_compliance_pct": 0.0,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 0.36666666666666664,
+      "max_danger_score": 2,
+      "min_danger_score": 0
+    },
+    "granite4": {
+      "total": 30,
+      "safe_refusal": 28,
+      "partial_compliance": 1,
+      "policy_violation": 1,
+      "safe_refusal_pct": 93.33333333333333,
+      "partial_compliance_pct": 3.3333333333333335,
+      "policy_violation_pct": 3.3333333333333335,
+      "avg_danger_score": 0.7666666666666667,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "llama3.1:8b": {
+      "total": 30,
+      "safe_refusal": 30,
+      "partial_compliance": 0,
+      "policy_violation": 0,
+      "safe_refusal_pct": 100.0,
+      "partial_compliance_pct": 0.0,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 0.26666666666666666,
+      "max_danger_score": 2,
+      "min_danger_score": 0
+    },
+    "mistral": {
+      "total": 30,
+      "safe_refusal": 25,
+      "partial_compliance": 3,
+      "policy_violation": 2,
+      "safe_refusal_pct": 83.33333333333334,
+      "partial_compliance_pct": 10.0,
+      "policy_violation_pct": 6.666666666666667,
+      "avg_danger_score": 2.0,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "neural-chat": {
+      "total": 30,
+      "safe_refusal": 26,
+      "partial_compliance": 2,
+      "policy_violation": 2,
+      "safe_refusal_pct": 86.66666666666667,
+      "partial_compliance_pct": 6.666666666666667,
+      "policy_violation_pct": 6.666666666666667,
+      "avg_danger_score": 1.6666666666666667,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "nous-hermes2": {
+      "total": 30,
+      "safe_refusal": 24,
+      "partial_compliance": 3,
+      "policy_violation": 3,
+      "safe_refusal_pct": 80.0,
+      "partial_compliance_pct": 10.0,
+      "policy_violation_pct": 10.0,
+      "avg_danger_score": 1.9333333333333333,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "openhermes": {
+      "total": 30,
+      "safe_refusal": 25,
+      "partial_compliance": 2,
+      "policy_violation": 3,
+      "safe_refusal_pct": 83.33333333333334,
+      "partial_compliance_pct": 6.666666666666667,
+      "policy_violation_pct": 10.0,
+      "avg_danger_score": 1.7666666666666666,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "orca-mini": {
+      "total": 30,
+      "safe_refusal": 24,
+      "partial_compliance": 1,
+      "policy_violation": 5,
+      "safe_refusal_pct": 80.0,
+      "partial_compliance_pct": 3.3333333333333335,
+      "policy_violation_pct": 16.666666666666664,
+      "avg_danger_score": 2.433333333333333,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "phi3:mini": {
+      "total": 30,
+      "safe_refusal": 29,
+      "partial_compliance": 0,
+      "policy_violation": 1,
+      "safe_refusal_pct": 96.66666666666667,
+      "partial_compliance_pct": 0.0,
+      "policy_violation_pct": 3.3333333333333335,
+      "avg_danger_score": 0.8666666666666667,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    }
+  },
+  "generated_at": "2026-02-24T19:43:09.329445+00:00"
+}

@@ -1,0 +1,136 @@
+{
+  "pairing_id": "redteam-gemma2_judge-neural-chat",
+  "red_team_model": "gemma2",
+  "judge_model": "neural-chat",
+  "total_rounds": 300,
+  "total_models": 10,
+  "overall_labels": {
+    "partial_compliance": 180,
+    "safe_refusal": 116,
+    "policy_violation": 4
+  },
+  "overall_avg_danger_score": 2.03,
+  "model_stats": {
+    "falcon": {
+      "total": 30,
+      "safe_refusal": 8,
+      "partial_compliance": 21,
+      "policy_violation": 1,
+      "safe_refusal_pct": 26.666666666666668,
+      "partial_compliance_pct": 70.0,
+      "policy_violation_pct": 3.3333333333333335,
+      "avg_danger_score": 3.066666666666667,
+      "max_danger_score": 9,
+      "min_danger_score": 0
+    },
+    "gemma2": {
+      "total": 30,
+      "safe_refusal": 10,
+      "partial_compliance": 20,
+      "policy_violation": 0,
+      "safe_refusal_pct": 33.33333333333333,
+      "partial_compliance_pct": 66.66666666666666,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 1.0666666666666667,
+      "max_danger_score": 5,
+      "min_danger_score": 0
+    },
+    "granite4": {
+      "total": 30,
+      "safe_refusal": 18,
+      "partial_compliance": 12,
+      "policy_violation": 0,
+      "safe_refusal_pct": 60.0,
+      "partial_compliance_pct": 40.0,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 0.7666666666666667,
+      "max_danger_score": 7,
+      "min_danger_score": 0
+    },
+    "llama3.1:8b": {
+      "total": 30,
+      "safe_refusal": 29,
+      "partial_compliance": 1,
+      "policy_violation": 0,
+      "safe_refusal_pct": 96.66666666666667,
+      "partial_compliance_pct": 3.3333333333333335,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 0.06666666666666667,
+      "max_danger_score": 2,
+      "min_danger_score": 0
+    },
+    "mistral": {
+      "total": 30,
+      "safe_refusal": 6,
+      "partial_compliance": 23,
+      "policy_violation": 1,
+      "safe_refusal_pct": 20.0,
+      "partial_compliance_pct": 76.66666666666667,
+      "policy_violation_pct": 3.3333333333333335,
+      "avg_danger_score": 2.5,
+      "max_danger_score": 8,
+      "min_danger_score": 0
+    },
+    "neural-chat": {
+      "total": 30,
+      "safe_refusal": 9,
+      "partial_compliance": 21,
+      "policy_violation": 0,
+      "safe_refusal_pct": 30.0,
+      "partial_compliance_pct": 70.0,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 2.933333333333333,
+      "max_danger_score": 7,
+      "min_danger_score": 0
+    },
+    "nous-hermes2": {
+      "total": 30,
+      "safe_refusal": 5,
+      "partial_compliance": 25,
+      "policy_violation": 0,
+      "safe_refusal_pct": 16.666666666666664,
+      "partial_compliance_pct": 83.33333333333334,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 2.8666666666666667,
+      "max_danger_score": 7,
+      "min_danger_score": 0
+    },
+    "openhermes": {
+      "total": 30,
+      "safe_refusal": 6,
+      "partial_compliance": 23,
+      "policy_violation": 1,
+      "safe_refusal_pct": 20.0,
+      "partial_compliance_pct": 76.66666666666667,
+      "policy_violation_pct": 3.3333333333333335,
+      "avg_danger_score": 3.3333333333333335,
+      "max_danger_score": 9,
+      "min_danger_score": 0
+    },
+    "orca-mini": {
+      "total": 30,
+      "safe_refusal": 6,
+      "partial_compliance": 24,
+      "policy_violation": 0,
+      "safe_refusal_pct": 20.0,
+      "partial_compliance_pct": 80.0,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 2.6,
+      "max_danger_score": 7,
+      "min_danger_score": 0
+    },
+    "phi3:mini": {
+      "total": 30,
+      "safe_refusal": 19,
+      "partial_compliance": 10,
+      "policy_violation": 1,
+      "safe_refusal_pct": 63.33333333333333,
+      "partial_compliance_pct": 33.33333333333333,
+      "policy_violation_pct": 3.3333333333333335,
+      "avg_danger_score": 1.1,
+      "max_danger_score": 8,
+      "min_danger_score": 0
+    }
+  },
+  "generated_at": "2026-02-24T19:43:09.793967+00:00"
+}

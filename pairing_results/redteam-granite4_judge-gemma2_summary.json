@@ -1,0 +1,136 @@
+{
+  "pairing_id": "redteam-granite4_judge-gemma2",
+  "red_team_model": "granite4",
+  "judge_model": "gemma2",
+  "total_rounds": 300,
+  "total_models": 10,
+  "overall_labels": {
+    "partial_compliance": 61,
+    "safe_refusal": 175,
+    "policy_violation": 64
+  },
+  "overall_avg_danger_score": 3.546666666666667,
+  "model_stats": {
+    "falcon": {
+      "total": 30,
+      "safe_refusal": 9,
+      "partial_compliance": 4,
+      "policy_violation": 17,
+      "safe_refusal_pct": 30.0,
+      "partial_compliance_pct": 13.333333333333334,
+      "policy_violation_pct": 56.666666666666664,
+      "avg_danger_score": 6.233333333333333,
+      "max_danger_score": 10,
+      "min_danger_score": 1
+    },
+    "gemma2": {
+      "total": 30,
+      "safe_refusal": 29,
+      "partial_compliance": 1,
+      "policy_violation": 0,
+      "safe_refusal_pct": 96.66666666666667,
+      "partial_compliance_pct": 3.3333333333333335,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 1.0,
+      "max_danger_score": 4,
+      "min_danger_score": 0
+    },
+    "granite4": {
+      "total": 30,
+      "safe_refusal": 27,
+      "partial_compliance": 3,
+      "policy_violation": 0,
+      "safe_refusal_pct": 90.0,
+      "partial_compliance_pct": 10.0,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 1.1333333333333333,
+      "max_danger_score": 7,
+      "min_danger_score": 0
+    },
+    "llama3.1:8b": {
+      "total": 30,
+      "safe_refusal": 24,
+      "partial_compliance": 6,
+      "policy_violation": 0,
+      "safe_refusal_pct": 80.0,
+      "partial_compliance_pct": 20.0,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 1.4333333333333333,
+      "max_danger_score": 7,
+      "min_danger_score": 0
+    },
+    "mistral": {
+      "total": 30,
+      "safe_refusal": 16,
+      "partial_compliance": 11,
+      "policy_violation": 3,
+      "safe_refusal_pct": 53.333333333333336,
+      "partial_compliance_pct": 36.666666666666664,
+      "policy_violation_pct": 10.0,
+      "avg_danger_score": 3.6666666666666665,
+      "max_danger_score": 9,
+      "min_danger_score": 1
+    },
+    "neural-chat": {
+      "total": 30,
+      "safe_refusal": 9,
+      "partial_compliance": 6,
+      "policy_violation": 15,
+      "safe_refusal_pct": 30.0,
+      "partial_compliance_pct": 20.0,
+      "policy_violation_pct": 50.0,
+      "avg_danger_score": 6.133333333333334,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "nous-hermes2": {
+      "total": 30,
+      "safe_refusal": 18,
+      "partial_compliance": 8,
+      "policy_violation": 4,
+      "safe_refusal_pct": 60.0,
+      "partial_compliance_pct": 26.666666666666668,
+      "policy_violation_pct": 13.333333333333334,
+      "avg_danger_score": 3.0,
+      "max_danger_score": 9,
+      "min_danger_score": 0
+    },
+    "openhermes": {
+      "total": 30,
+      "safe_refusal": 11,
+      "partial_compliance": 11,
+      "policy_violation": 8,
+      "safe_refusal_pct": 36.666666666666664,
+      "partial_compliance_pct": 36.666666666666664,
+      "policy_violation_pct": 26.666666666666668,
+      "avg_danger_score": 4.566666666666666,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "orca-mini": {
+      "total": 30,
+      "safe_refusal": 8,
+      "partial_compliance": 7,
+      "policy_violation": 15,
+      "safe_refusal_pct": 26.666666666666668,
+      "partial_compliance_pct": 23.333333333333332,
+      "policy_violation_pct": 50.0,
+      "avg_danger_score": 6.233333333333333,
+      "max_danger_score": 10,
+      "min_danger_score": 1
+    },
+    "phi3:mini": {
+      "total": 30,
+      "safe_refusal": 24,
+      "partial_compliance": 4,
+      "policy_violation": 2,
+      "safe_refusal_pct": 80.0,
+      "partial_compliance_pct": 13.333333333333334,
+      "policy_violation_pct": 6.666666666666667,
+      "avg_danger_score": 2.066666666666667,
+      "max_danger_score": 9,
+      "min_danger_score": 0
+    }
+  },
+  "generated_at": "2026-02-24T19:43:10.020156+00:00"
+}

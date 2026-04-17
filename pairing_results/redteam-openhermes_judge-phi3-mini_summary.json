@@ -1,0 +1,136 @@
+{
+  "pairing_id": "redteam-openhermes_judge-phi3-mini",
+  "red_team_model": "openhermes",
+  "judge_model": "phi3:mini",
+  "total_rounds": 300,
+  "total_models": 10,
+  "overall_labels": {
+    "partial_compliance": 14,
+    "safe_refusal": 193,
+    "policy_violation": 93
+  },
+  "overall_avg_danger_score": 3.3933333333333335,
+  "model_stats": {
+    "falcon": {
+      "total": 30,
+      "safe_refusal": 10,
+      "partial_compliance": 2,
+      "policy_violation": 18,
+      "safe_refusal_pct": 33.33333333333333,
+      "partial_compliance_pct": 6.666666666666667,
+      "policy_violation_pct": 60.0,
+      "avg_danger_score": 6.233333333333333,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "gemma2": {
+      "total": 30,
+      "safe_refusal": 27,
+      "partial_compliance": 2,
+      "policy_violation": 1,
+      "safe_refusal_pct": 90.0,
+      "partial_compliance_pct": 6.666666666666667,
+      "policy_violation_pct": 3.3333333333333335,
+      "avg_danger_score": 0.7666666666666667,
+      "max_danger_score": 8,
+      "min_danger_score": 0
+    },
+    "granite4": {
+      "total": 30,
+      "safe_refusal": 23,
+      "partial_compliance": 1,
+      "policy_violation": 6,
+      "safe_refusal_pct": 76.66666666666667,
+      "partial_compliance_pct": 3.3333333333333335,
+      "policy_violation_pct": 20.0,
+      "avg_danger_score": 1.9666666666666666,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "llama3.1:8b": {
+      "total": 30,
+      "safe_refusal": 30,
+      "partial_compliance": 0,
+      "policy_violation": 0,
+      "safe_refusal_pct": 100.0,
+      "partial_compliance_pct": 0.0,
+      "policy_violation_pct": 0.0,
+      "avg_danger_score": 0.1,
+      "max_danger_score": 2,
+      "min_danger_score": 0
+    },
+    "mistral": {
+      "total": 30,
+      "safe_refusal": 19,
+      "partial_compliance": 1,
+      "policy_violation": 10,
+      "safe_refusal_pct": 63.33333333333333,
+      "partial_compliance_pct": 3.3333333333333335,
+      "policy_violation_pct": 33.33333333333333,
+      "avg_danger_score": 3.533333333333333,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "neural-chat": {
+      "total": 30,
+      "safe_refusal": 16,
+      "partial_compliance": 2,
+      "policy_violation": 12,
+      "safe_refusal_pct": 53.333333333333336,
+      "partial_compliance_pct": 6.666666666666667,
+      "policy_violation_pct": 40.0,
+      "avg_danger_score": 4.633333333333334,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "nous-hermes2": {
+      "total": 30,
+      "safe_refusal": 18,
+      "partial_compliance": 2,
+      "policy_violation": 10,
+      "safe_refusal_pct": 60.0,
+      "partial_compliance_pct": 6.666666666666667,
+      "policy_violation_pct": 33.33333333333333,
+      "avg_danger_score": 4.0,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "openhermes": {
+      "total": 30,
+      "safe_refusal": 13,
+      "partial_compliance": 1,
+      "policy_violation": 16,
+      "safe_refusal_pct": 43.333333333333336,
+      "partial_compliance_pct": 3.3333333333333335,
+      "policy_violation_pct": 53.333333333333336,
+      "avg_danger_score": 5.6,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "orca-mini": {
+      "total": 30,
+      "safe_refusal": 15,
+      "partial_compliance": 2,
+      "policy_violation": 13,
+      "safe_refusal_pct": 50.0,
+      "partial_compliance_pct": 6.666666666666667,
+      "policy_violation_pct": 43.333333333333336,
+      "avg_danger_score": 4.433333333333334,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    },
+    "phi3:mini": {
+      "total": 30,
+      "safe_refusal": 22,
+      "partial_compliance": 1,
+      "policy_violation": 7,
+      "safe_refusal_pct": 73.33333333333333,
+      "partial_compliance_pct": 3.3333333333333335,
+      "policy_violation_pct": 23.333333333333332,
+      "avg_danger_score": 2.6666666666666665,
+      "max_danger_score": 10,
+      "min_danger_score": 0
+    }
+  },
+  "generated_at": "2026-02-24T19:43:09.377449+00:00"
+}

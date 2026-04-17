@@ -1,0 +1,2250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red Team Evaluation Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Anti-FOUC: paint the dark background before anything else loads -->
+    <style>html,body{background:#0a0c10;color:#e2e8f0;}</style>
+    <style>
+        :root {
+            --bg: #0a0c10;
+            --surface: rgba(20, 24, 33, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #e2e8f0;
+            --text-dim: #94a3b8;
+            --accent-primary: #00f2fe;
+            --accent-secondary: #4facfe;
+            --safe: #10b981;
+            --danger: #ef4444;
+            --warn: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.7;
+            font-size: 16px;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(79, 172, 254, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 242, 254, 0.05) 0%, transparent 40%);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .global-header {
+            padding: 20px 40px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(10, 12, 16, 0.85);
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            grid-template-areas: 
+                "title controls"
+                "nav controls";
+            gap: 12px;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header-content > div:first-child {
+            grid-area: title;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .global-nav {
+            grid-area: nav;
+            display: flex;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            justify-self: start;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-dim);
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-link.active {
+            color: #0a0c10;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            box-shadow: 0 4px 12px rgba(0, 242, 254, 0.3);
+        }
+
+        .global-header h1 {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            white-space: nowrap;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 4px;
+            font-weight: 500;
+            opacity: 0.8;
+        }
+
+        .file-selector, .summary-card, .chart-container, .filters, .leaderboard, .results-section {
+            background: var(--surface);
+            backdrop-filter: blur(10px);
+            padding: 32px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 32px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .file-selector h2, .summary-card h3, .chart-container h2, .filters h2, .leaderboard h2, .results-section h2 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: var(--text-dim);
+            font-weight: 700;
+        }
+
+        .file-selector-group label {
+            font-weight: 600;
+            color: var(--text-main);
+            font-size: 1.1em;
+        }
+
+        .file-selector-group select {
+            flex: 1;
+            min-width: 300px;
+            padding: 12px 16px;
+            font-size: 1em;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(10, 12, 16, 0.6);
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .file-selector-group select:hover, .file-selector-group select:focus {
+            border-color: var(--accent-primary);
+        }
+
+        .file-selector-group button, .expand-btn, .round-controls button {
+            padding: 12px 24px;
+            font-size: 1em;
+            font-weight: 600;
+            color: #0a0c10;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 242, 254, 0.2);
+        }
+
+        .file-info {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 4px solid var(--accent-primary);
+            font-size: 0.9em;
+            color: var(--text-main);
+            border-radius: 4px;
+        }
+
+        /* Results Lazy Gate */
+        .results-lazy-gate {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            background: rgba(255, 255, 255, 0.01);
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .results-lazy-gate:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .load-detailed-btn {
+            padding: 14px 32px;
+            font-size: 1.1em;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .lazy-note {
+            font-size: 0.9em;
+            color: var(--text-dim);
+            text-align: center;
+            max-width: 500px;
+        }
+
+        /* Danger slider lock for fast path */
+        .slider-locked {
+            opacity: 0.5;
+            pointer-events: none;
+            position: relative;
+        }
+
+        .slider-lock-msg {
+            display: none;
+        }
+
+        /* Phrase Intel Styles */
+        .phrase-intel-view {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .keyword-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, min-min-width: 300px, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .keyword-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .keyword-card h4 {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            color: var(--accent-primary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .keyword-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .keyword-tag {
+            padding: 4px 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.85em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .keyword-tag .count {
+            color: var(--accent-secondary);
+            font-weight: 700;
+        }
+
+        .matrix-legend {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            font-size: 0.85em;
+            color: var(--text-dim);
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+            color: var(--warn);
+            font-size: 12px;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+
+        .slider-locked .slider-lock-msg {
+            display: block;
+        }
+
+        /* Summary Cards */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .summary-card {
+            background: var(--surface);
+            backdrop-filter: blur(10px);
+            padding: 28px 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--accent-primary), var(--accent-secondary));
+        }
+
+        .summary-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 8px 24px rgba(0, 242, 254, 0.15);
+        }
+
+        .summary-card h3 {
+            font-size: 0.85em;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .summary-card .value {
+            font-size: 2.8em;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .summary-card .subtitle {
+            font-size: 0.85em;
+            color: var(--text-dim);
+            margin-top: 8px;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+        }
+
+
+        /* Filters — dark mode */
+        .filters {
+            background: var(--surface);
+            backdrop-filter: blur(10px);
+            padding: 32px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 32px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .filters h2 {
+            font-size: 1.2em;
+            margin-bottom: 24px;
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--accent-primary);
+            border-radius: 4px;
+        }
+
+        .filter-item label {
+            cursor: pointer;
+            user-select: none;
+            font-size: 0.95em;
+            color: var(--text-main);
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .filter-item label:hover {
+            color: var(--accent-primary);
+        }
+
+
+        /* Range Slider — dark mode */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            outline: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            transition: background 0.2s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.15);
+            box-shadow: 0 2px 8px rgba(0, 242, 254, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.85em;
+            color: var(--text-dim);
+            font-weight: 600;
+        }
+
+        .danger-slider-container {
+            margin-top: 16px;
+        }
+
+        .danger-slider-container label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 700;
+            color: var(--text-main);
+            font-size: 0.95em;
+        }
+
+        .danger-slider-wrapper {
+            background: rgba(255,255,255,0.03);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        #dangerScoreSlider {
+            width: 100%;
+        }
+
+        .danger-value {
+            text-align: center;
+            margin-top: 12px;
+            font-size: 1em;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+
+        /* Leaderboard — dark mode */
+        .leaderboard {
+            background: var(--surface);
+            backdrop-filter: blur(10px);
+            padding: 32px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 32px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .leaderboard h2 {
+            font-size: 1.2em;
+            margin-bottom: 24px;
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        .leaderboard-table, .results-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .leaderboard-table thead, .results-table thead {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-dim);
+        }
+
+        .leaderboard-table th, .results-table th {
+            padding: 16px 20px;
+            text-align: left;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.9em;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .leaderboard-table th.sortable:hover, .results-table th.sortable:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .leaderboard-table tbody tr, .results-table tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s ease;
+        }
+
+        .leaderboard-table tbody tr:hover, .results-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .leaderboard-table td, .results-table td {
+            padding: 16px 20px;
+            color: var(--text-main);
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        .leaderboard-table .rank {
+            font-weight: 700;
+            font-size: 1.1em;
+            color: var(--accent-primary);
+            width: 60px;
+        }
+
+        .leaderboard-table .model {
+            font-weight: 700;
+            font-size: 1.05em;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+
+        .badge.safe {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .badge.violation {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        .badge.danger-critical {
+            background: rgba(127, 29, 29, 0.5);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.6);
+        }
+
+        .badge.danger-high {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        .badge.danger-moderate {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+
+        .badge.danger-low {
+            background: rgba(59, 130, 246, 0.15);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .badge.danger-minimal {
+            background: rgba(16, 185, 129, 0.1);
+            color: #6ee7b7;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+
+        /* Results Section — dark mode */
+        .results-section {
+            background: var(--surface);
+            backdrop-filter: blur(10px);
+            padding: 32px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 32px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .results-section h2 {
+            font-size: 1.2em;
+            margin-bottom: 24px;
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        .round-controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+
+        .round-controls button {
+            padding: 10px 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #0a0c10;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 242, 254, 0.2);
+        }
+
+        .round-controls button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 242, 254, 0.35);
+        }
+
+
+
+        .round-header {
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            user-select: none;
+            font-weight: 700;
+            border-top: 2px solid var(--accent-primary) !important;
+            transition: background 0.2s ease;
+        }
+
+        .round-header:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .round-header.collapsed .round-toggle::before {
+            content: '▶ ';
+        }
+
+        .round-header:not(.collapsed) .round-toggle::before {
+            content: '▼ ';
+        }
+
+        .round-toggle {
+            font-size: 1.2em;
+            color: var(--accent-primary);
+            font-weight: 700;
+        }
+
+        .round-row {
+            transition: all 0.2s ease;
+        }
+
+        .round-row.hidden {
+            display: none;
+        }
+
+        .response-detail {
+            display: none;
+        }
+
+        .response-detail-row {
+            display: none;
+            background: rgba(0, 0, 0, 0.2);
+            border-left: 4px solid var(--accent-secondary);
+        }
+
+        .response-detail-row.expanded {
+            display: table-row;
+        }
+
+        .response-detail-row td {
+            padding: 24px 32px !important;
+            border-bottom: 1px solid var(--border) !important;
+            color: var(--text-dim) !important;
+        }
+
+        .response-detail-content {
+            max-width: 100%;
+        }
+
+        .response-detail h4 {
+            font-size: 1.05em;
+            color: var(--accent-secondary);
+            margin-top: 16px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .response-detail h4:first-child {
+            margin-top: 0;
+        }
+
+        .response-detail p {
+            color: var(--text-main);
+            line-height: 1.7;
+            font-weight: 500;
+            font-size: 0.95em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px !important;
+            font-size: 1.2em;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+
+        /* Charts section grid */
+        .charts-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .chart-container {
+            background: var(--surface);
+            backdrop-filter: blur(10px);
+            padding: 28px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .chart-container:hover {
+            border-color: rgba(0, 242, 254, 0.3);
+            box-shadow: 0 8px 24px rgba(0, 242, 254, 0.08);
+        }
+
+        .chart-container h2 {
+            font-size: 1em;
+            margin-bottom: 20px;
+            color: var(--text-dim);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Heatmap table dark-mode */
+        .heatmap-table {
+            width: 100%;
+            font-size: 0.82em;
+            border-collapse: collapse;
+        }
+
+        .heatmap-table th, .heatmap-table td {
+            padding: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .heatmap-table thead th {
+            font-size: 0.78em;
+            color: var(--text-dim);
+            text-align: center;
+            font-weight: 600;
+            background: rgba(255,255,255,0.03);
+        }
+
+        .heatmap-table tbody td:first-child {
+            font-weight: 600;
+            color: var(--text-main);
+            white-space: nowrap;
+        }
+
+        /* File selector group flex layout */
+        .file-selector-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        /* Loading / error */
+        .loading-message {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-dim);
+            font-size: 1.1em;
+        }
+
+        .error-message {
+            padding: 16px 20px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            color: #f87171;
+            margin-bottom: 20px;
+        }
+
+        /* Print Styles */
+        @media print {
+            .container {
+                max-width: 100%;
+            }
+
+            .summary-card,
+            .chart-container,
+            .leaderboard,
+            .results-section {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            header {
+                background: var(--bg);
+            }
+
+            .round-row {
+                display: table-row !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="global-header">
+        <div class="header-content">
+            <div>
+                <h1>Permutative Mesh Analysis</h1>
+                <div class="subtitle">Explorer — Comprehensive Evaluation Data</div>
+            </div>
+            <nav class="global-nav">
+                <a href="index.html" class="nav-link active" id="nav-dashboard" onclick="switchTab('dashboard', this); return false;">Dashboard</a>
+                <a href="#phrase-intel" class="nav-link" id="nav-phrase-intel" onclick="switchTab('phrase-intel', this); return false;">Phrase Intel</a>
+                <a href="flow.html" class="nav-link">Flow Graph</a>
+                <a href="heatmapdashboard.html" class="nav-link">Heatmaps</a>
+                <a href="dashboard_final.html" class="nav-link">Adversarial Phrases</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="dashboardView">
+            <!-- File Selector -->
+        <div class="file-selector">
+            <h2>Select Data View</h2>
+            <div class="file-selector-group">
+                <label for="jsonFileSelect">View:</label>
+                <select id="jsonFileSelect">
+                    <option value="" disabled selected>-- Choose a grouping or file --</option>
+                    <optgroup label="Combined Views">
+                        <option value="group:master">Master (All 90 Files Combined)</option>
+                    </optgroup>
+                    <optgroup label="By Red Team Model">
+                        <option value="group:rt:falcon">Red Team: falcon (9 files)</option>
+                        <option value="group:rt:gemma2">Red Team: gemma2 (9 files)</option>
+                        <option value="group:rt:granite4">Red Team: granite4 (9 files)</option>
+                        <option value="group:rt:llama3.1-8b">Red Team: llama3.1-8b (9 files)</option>
+                        <option value="group:rt:mistral">Red Team: mistral (9 files)</option>
+                        <option value="group:rt:neural-chat">Red Team: neural-chat (9 files)</option>
+                        <option value="group:rt:nous-hermes2">Red Team: nous-hermes2 (9 files)</option>
+                        <option value="group:rt:openhermes">Red Team: openhermes (9 files)</option>
+                        <option value="group:rt:orca-mini">Red Team: orca-mini (9 files)</option>
+                        <option value="group:rt:phi3-mini">Red Team: phi3-mini (9 files)</option>
+                    </optgroup>
+                    <optgroup label="By Judge Model">
+                        <option value="group:judge:falcon">Judge: falcon (9 files)</option>
+                        <option value="group:judge:gemma2">Judge: gemma2 (9 files)</option>
+                        <option value="group:judge:granite4">Judge: granite4 (9 files)</option>
+                        <option value="group:judge:llama3.1-8b">Judge: llama3.1-8b (9 files)</option>
+                        <option value="group:judge:mistral">Judge: mistral (9 files)</option>
+                        <option value="group:judge:neural-chat">Judge: neural-chat (9 files)</option>
+                        <option value="group:judge:nous-hermes2">Judge: nous-hermes2 (9 files)</option>
+                        <option value="group:judge:openhermes">Judge: openhermes (9 files)</option>
+                        <option value="group:judge:orca-mini">Judge: orca-mini (9 files)</option>
+                        <option value="group:judge:phi3-mini">Judge: phi3-mini (9 files)</option>
+                    </optgroup>
+                    <optgroup id="individualFilesGroup" label="Individual Pairing Files">
+                    </optgroup>
+                </select>
+                <button onclick="loadSelectedFile()">Load</button>
+            </div>
+            <div id="loadProgress" style="display:none; margin-top:12px;">
+                <div style="background:rgba(255,255,255,0.08); border-radius:6px; overflow:hidden; height:6px;">
+                    <div id="loadProgressBar"
+                        style="background:linear-gradient(135deg,#00f2fe,#4facfe); height:100%; width:0%; transition:width 0.3s;">
+                    </div>
+                </div>
+                <div id="loadProgressText" style="font-size:0.85em; color:#94a3b8; margin-top:6px;"></div>
+            </div>
+            <div id="fileInfo" class="file-info" style="display: none;"></div>
+        </div>
+
+        <!-- Loading/Error Messages -->
+        <div id="loadingMessage" class="loading-message" style="display: none;">
+            Loading data...
+        </div>
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+        <!-- Main Content (initially hidden) -->
+        <div id="mainContent" style="display: none;">
+            <!-- Executive Summary -->
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <h3>Total Rounds</h3>
+                    <div class="value" id="totalRounds">0</div>
+                    <div class="subtitle">Attack iterations</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Models Tested</h3>
+                    <div class="value" id="modelsCount">0</div>
+                    <div class="subtitle">LLM variations</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Avg Danger Score</h3>
+                    <div class="value" id="avgDanger">0.0</div>
+                    <div class="subtitle">Out of 10.0</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Safety Pass Rate</h3>
+                    <div class="value" id="safetyRate">0%</div>
+                    <div class="subtitle">Safe refusals</div>
+                </div>
+            </div>
+
+            <!-- Leaderboard -->
+            <div class="leaderboard">
+                <h2>🏆 Model Safety Leaderboard</h2>
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th class="sortable" data-column="rank">Rank</th>
+                            <th class="sortable" data-column="model">Model</th>
+                            <th class="sortable" data-column="safe">Safe Refusals</th>
+                            <th class="sortable" data-column="partial">Partial Compliance</th>
+                            <th class="sortable" data-column="violation">Policy Violations</th>
+                            <th class="sortable" data-column="avgDanger">Avg Danger</th>
+                            <th class="sortable" data-column="passRate">Pass Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-section">
+                <div class="chart-container">
+                    <h2>Safety Classification Distribution</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="labelChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h2>Category Distribution</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Charts Section -->
+            <div class="charts-section">
+                <div class="chart-container">
+                    <h2>Model Pass/Fail Rates</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="modelPassFailChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h2>Pass/Fail by Attack Category</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="categoryPassFailChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Model Comparison Heatmap -->
+            <div class="charts-section">
+                <div class="chart-container">
+                    <h2>Model Comparison Heatmap</h2>
+                    <div id="heatmapContainer"></div>
+                </div>
+            </div>
+
+            <!-- Full Width Trend Chart -->
+            <div class="chart-container" style="margin-bottom: 30px;">
+                <h2>Cumulative Performance Trend Over Rounds</h2>
+                <div style="position: relative; height: 400px;">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Full Width Cumulative Danger Score Chart -->
+            <div class="chart-container" style="margin-bottom: 30px;">
+                <h2>Cumulative Average Danger Score Over Rounds</h2>
+                <div style="position: relative; height: 400px;">
+                    <canvas id="cumulativeDangerChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Danger Score Charts -->
+            <div class="charts-section">
+                <div class="chart-container">
+                    <h2>Average Danger Score by Model</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="dangerScoreChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h2>Danger Score Distribution</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="dangerDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters">
+                <h2>🔍 Filters</h2>
+
+                <div class="filter-group">
+                    <div class="filter-item">
+                        <input type="checkbox" id="filterSafe" checked onchange="applyFilters()">
+                        <label for="filterSafe">Safe Refusal</label>
+                    </div>
+                    <div class="filter-item">
+                        <input type="checkbox" id="filterPartial" checked onchange="applyFilters()">
+                        <label for="filterPartial">Partial Compliance</label>
+                    </div>
+                    <div class="filter-item">
+                        <input type="checkbox" id="filterViolation" checked onchange="applyFilters()">
+                        <label for="filterViolation">Policy Violation</label>
+                    </div>
+                </div>
+
+                <div id="modelFilters" class="filter-group"></div>
+                <div id="categoryFilters" class="filter-group"></div>
+
+                <div class="danger-slider-container" id="dangerSliderContainer">
+                    <label for="dangerScoreSlider">Minimum Danger Score</label>
+                    <div class="danger-slider-wrapper">
+                        <input type="range" id="dangerScoreSlider" min="0" max="10" value="0" step="1">
+                        <div class="slider-labels">
+                            <span>0 (Safe)</span>
+                            <span>5 (Moderate)</span>
+                            <span>10 (Critical)</span>
+                        </div>
+                        <div class="danger-value">Current: <span id="dangerValue">0</span>/10</div>
+                    </div>
+                    <div class="slider-lock-msg">Detailed results must be loaded to filter by individual danger scores.</div>
+                </div>
+            </div>
+
+            <!-- Detailed Results -->
+            <div class="results-section" id="resultsSection">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>📝 Detailed Test Results</h2>
+                    <div id="resultCountBadge" style="background: var(--accent-primary); color: #0a0c10; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 0.85em; display: none;">
+                        <span id="resultCount">0</span> Results
+                    </div>
+                </div>
+
+                <div id="resultsLazyGate" class="results-lazy-gate">
+                    <button class="expand-btn load-detailed-btn" onclick="loadRawDataOnDemand()">
+                        Load Detailed Results Table
+                    </button>
+                    <div class="lazy-note">
+                        Current summary is shown using pre-aggregated data (~30 KB). 
+                        Load raw results (~60 MB for Master) only if you need to inspect individual prompts and responses.
+                    </div>
+                </div>
+
+                <div id="resultsContent" style="display: none;">
+                    <div class="results-controls" style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                        <div class="search-container" style="flex: 1; min-width: 250px;">
+                            <input type="text" id="promptSearch" placeholder="Search prompts..." oninput="applyFilters()" style="width: 100%; padding: 10px 16px; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white;">
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="changePage(-1)" class="expand-btn" style="padding: 8px 16px; font-size: 0.9em;">Prev</button>
+                            <div style="align-self: center; font-size: 0.95em; color: var(--text-dim);">
+                                Page <span id="currentPage">1</span> of <span id="totalPages">1</span>
+                            </div>
+                            <button onclick="changePage(1)" class="expand-btn" style="padding: 8px 16px; font-size: 0.9em;">Next</button>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">Round</th>
+                                    <th>Target Model</th>
+                                    <th>Category</th>
+                                    <th>Result Label</th>
+                                    <th style="width: 80px;">Danger</th>
+                                    <th>Timestamp</th>
+                                    <th style="width: 50px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phrase Intelligence View -->
+        <div id="phraseIntelView" class="phrase-intel-view">
+            <div class="chart-container">
+                <h2>Volatility vs. Danger Matrix</h2>
+                <div style="height: 500px; position: relative;">
+                    <canvas id="volatilityMatrix"></canvas>
+                </div>
+                <div class="matrix-legend">
+                    <div class="legend-item"><span class="dot" style="background:var(--safe)"></span> Consistently Safe</div>
+                    <div class="legend-item"><span class="dot" style="background:var(--warn)"></span> Volatile/Controversial</div>
+                    <div class="legend-item"><span class="dot" style="background:var(--danger)"></span> Consistently Dangerous</div>
+                </div>
+                <p class="lazy-note" style="margin-top:20px;">
+                    This matrix plots phrases based on their <strong>Average Danger Score</strong> (X) vs <strong>Standard Deviation</strong> (Y). 
+                    Points at the top are "volatile"—models/judges disagree significantly on their safety.
+                </p>
+            </div>
+
+            <div class="keyword-grid">
+                <div class="keyword-card">
+                    <h4>Dangerous Keywords</h4>
+                    <div id="dangerousKeywords" class="keyword-list"></div>
+                </div>
+                <div class="keyword-card">
+                    <h4>Volatile Keywords</h4>
+                    <div id="volatileKeywords" class="keyword-list"></div>
+                </div>
+                <div class="keyword-card">
+                    <h4>Safe Keywords</h4>
+                    <div id="safeKeywords" class="keyword-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════
+        // CHART.JS GLOBAL DARK-MODE DEFAULTS
+        // ═══════════════════════════════════════════════════════════
+        (function setupChartDefaults() {
+            if (typeof Chart === 'undefined') return;
+            const GRID       = 'rgba(255,255,255,0.06)';
+            const TICK       = '#64748b';
+            const LEGEND_CLR = '#94a3b8';
+            const TOOLTIP_BG = 'rgba(10,12,16,0.92)';
+            const TOOLTIP_BD = 'rgba(0,242,254,0.25)';
+
+            Chart.defaults.color = TICK;
+            Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+            Chart.defaults.font.size   = 12;
+
+            Chart.defaults.plugins.legend.labels.color   = LEGEND_CLR;
+            Chart.defaults.plugins.legend.labels.padding = 16;
+            Chart.defaults.plugins.legend.labels.usePointStyle = true;
+
+            Chart.defaults.plugins.tooltip.backgroundColor = TOOLTIP_BG;
+            Chart.defaults.plugins.tooltip.titleColor      = '#e2e8f0';
+            Chart.defaults.plugins.tooltip.bodyColor       = '#94a3b8';
+            Chart.defaults.plugins.tooltip.borderColor     = TOOLTIP_BD;
+            Chart.defaults.plugins.tooltip.borderWidth     = 1;
+            Chart.defaults.plugins.tooltip.padding         = 12;
+            Chart.defaults.plugins.tooltip.cornerRadius    = 8;
+            Chart.defaults.plugins.tooltip.titleFont = { size: 13, weight: 700 };
+            Chart.defaults.plugins.tooltip.bodyFont  = { size: 12 };
+
+            Chart.defaults.scale.grid.color        = GRID;
+            Chart.defaults.scale.ticks.color       = TICK;
+            Chart.defaults.scale.grid.borderColor  = GRID;
+
+            Chart.defaults.animation.duration = 600;
+            Chart.defaults.animation.easing   = 'easeOutQuart';
+        })();
+
+        // ═══════════════════════════════════════════════════════════
+        // FILE MANIFEST — all known result files
+        // ═══════════════════════════════════════════════════════════
+        const ALL_RESULT_FILES = [
+            'redteam-falcon_judge-gemma2_results.jsonl',
+            'redteam-falcon_judge-granite4_results.jsonl',
+            'redteam-falcon_judge-llama3.1-8b_results.jsonl',
+            'redteam-falcon_judge-mistral_results.jsonl',
+            'redteam-falcon_judge-neural-chat_results.jsonl',
+            'redteam-falcon_judge-nous-hermes2_results.jsonl',
+            'redteam-falcon_judge-openhermes_results.jsonl',
+            'redteam-falcon_judge-orca-mini_results.jsonl',
+            'redteam-falcon_judge-phi3-mini_results.jsonl',
+            'redteam-gemma2_judge-falcon_results.jsonl',
+            'redteam-gemma2_judge-granite4_results.jsonl',
+            'redteam-gemma2_judge-llama3.1-8b_results.jsonl',
+            'redteam-gemma2_judge-mistral_results.jsonl',
+            'redteam-gemma2_judge-neural-chat_results.jsonl',
+            'redteam-gemma2_judge-nous-hermes2_results.jsonl',
+            'redteam-gemma2_judge-openhermes_results.jsonl',
+            'redteam-gemma2_judge-orca-mini_results.jsonl',
+            'redteam-gemma2_judge-phi3-mini_results.jsonl',
+            'redteam-granite4_judge-falcon_results.jsonl',
+            'redteam-granite4_judge-gemma2_results.jsonl',
+            'redteam-granite4_judge-llama3.1-8b_results.jsonl',
+            'redteam-granite4_judge-mistral_results.jsonl',
+            'redteam-granite4_judge-neural-chat_results.jsonl',
+            'redteam-granite4_judge-nous-hermes2_results.jsonl',
+            'redteam-granite4_judge-openhermes_results.jsonl',
+            'redteam-granite4_judge-orca-mini_results.jsonl',
+            'redteam-granite4_judge-phi3-mini_results.jsonl',
+            'redteam-llama3.1-8b_judge-falcon_results.jsonl',
+            'redteam-llama3.1-8b_judge-gemma2_results.jsonl',
+            'redteam-llama3.1-8b_judge-granite4_results.jsonl',
+            'redteam-llama3.1-8b_judge-mistral_results.jsonl',
+            'redteam-llama3.1-8b_judge-neural-chat_results.jsonl',
+            'redteam-llama3.1-8b_judge-nous-hermes2_results.jsonl',
+            'redteam-llama3.1-8b_judge-openhermes_results.jsonl',
+            'redteam-llama3.1-8b_judge-orca-mini_results.jsonl',
+            'redteam-llama3.1-8b_judge-phi3-mini_results.jsonl',
+            'redteam-mistral_judge-falcon_results.jsonl',
+            'redteam-mistral_judge-gemma2_results.jsonl',
+            'redteam-mistral_judge-granite4_results.jsonl',
+            'redteam-mistral_judge-llama3.1-8b_results.jsonl',
+            'redteam-mistral_judge-neural-chat_results.jsonl',
+            'redteam-mistral_judge-nous-hermes2_results.jsonl',
+            'redteam-mistral_judge-openhermes_results.jsonl',
+            'redteam-mistral_judge-orca-mini_results.jsonl',
+            'redteam-mistral_judge-phi3-mini_results.jsonl',
+            'redteam-neural-chat_judge-falcon_results.jsonl',
+            'redteam-neural-chat_judge-gemma2_results.jsonl',
+            'redteam-neural-chat_judge-granite4_results.jsonl',
+            'redteam-neural-chat_judge-llama3.1-8b_results.jsonl',
+            'redteam-neural-chat_judge-mistral_results.jsonl',
+            'redteam-neural-chat_judge-nous-hermes2_results.jsonl',
+            'redteam-neural-chat_judge-openhermes_results.jsonl',
+            'redteam-neural-chat_judge-orca-mini_results.jsonl',
+            'redteam-neural-chat_judge-phi3-mini_results.jsonl',
+            'redteam-nous-hermes2_judge-falcon_results.jsonl',
+            'redteam-nous-hermes2_judge-gemma2_results.jsonl',
+            'redteam-nous-hermes2_judge-granite4_results.jsonl',
+            'redteam-nous-hermes2_judge-llama3.1-8b_results.jsonl',
+            'redteam-nous-hermes2_judge-mistral_results.jsonl',
+            'redteam-nous-hermes2_judge-neural-chat_results.jsonl',
+            'redteam-nous-hermes2_judge-openhermes_results.jsonl',
+            'redteam-nous-hermes2_judge-orca-mini_results.jsonl',
+            'redteam-nous-hermes2_judge-phi3-mini_results.jsonl',
+            'redteam-openhermes_judge-falcon_results.jsonl',
+            'redteam-openhermes_judge-gemma2_results.jsonl',
+            'redteam-openhermes_judge-granite4_results.jsonl',
+            'redteam-openhermes_judge-llama3.1-8b_results.jsonl',
+            'redteam-openhermes_judge-mistral_results.jsonl',
+            'redteam-openhermes_judge-neural-chat_results.jsonl',
+            'redteam-openhermes_judge-nous-hermes2_results.jsonl',
+            'redteam-openhermes_judge-orca-mini_results.jsonl',
+            'redteam-openhermes_judge-phi3-mini_results.jsonl',
+            'redteam-orca-mini_judge-falcon_results.jsonl',
+            'redteam-orca-mini_judge-gemma2_results.jsonl',
+            'redteam-orca-mini_judge-granite4_results.jsonl',
+            'redteam-orca-mini_judge-llama3.1-8b_results.jsonl',
+            'redteam-orca-mini_judge-mistral_results.jsonl',
+            'redteam-orca-mini_judge-neural-chat_results.jsonl',
+            'redteam-orca-mini_judge-nous-hermes2_results.jsonl',
+            'redteam-orca-mini_judge-openhermes_results.jsonl',
+            'redteam-orca-mini_judge-phi3-mini_results.jsonl',
+            'redteam-phi3-mini_judge-falcon_results.jsonl',
+            'redteam-phi3-mini_judge-gemma2_results.jsonl',
+            'redteam-phi3-mini_judge-granite4_results.jsonl',
+            'redteam-phi3-mini_judge-llama3.1-8b_results.jsonl',
+            'redteam-phi3-mini_judge-mistral_results.jsonl',
+            'redteam-phi3-mini_judge-neural-chat_results.jsonl',
+            'redteam-phi3-mini_judge-nous-hermes2_results.jsonl',
+            'redteam-phi3-mini_judge-openhermes_results.jsonl',
+            'redteam-phi3-mini_judge-orca-mini_results.jsonl'
+        ];
+
+        // ═══════════════════════════════════════════════════════════
+        // Helpers: parse file name → red team / judge
+        // ═══════════════════════════════════════════════════════════
+        function parseFileName(f) {
+            const m = f.match(/^redteam-(.+?)_judge-(.+?)_results\.jsonl$/);
+            return m ? { rt: m[1], judge: m[2] } : null;
+        }
+
+        function filesForGroup(groupValue) {
+            if (groupValue === 'group:master') return [...ALL_RESULT_FILES];
+            const parts = groupValue.split(':');
+            const type = parts[1];
+            const model = parts.slice(2).join(':');
+            return ALL_RESULT_FILES.filter(f => {
+                const p = parseFileName(f);
+                if (!p) return false;
+                return type === 'rt' ? p.rt === model : p.judge === model;
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // Global state
+        // ═══════════════════════════════════════════════════════════
+        let aggManifest = null;
+        let currentAgg = null;
+        let allData = [];
+        let filteredData = [];
+        let currentFilePath = '';
+        let isRawLoaded = false;
+
+        // Pagination
+        let currentPage = 1;
+        const rowsPerPage = 50;
+
+        // Sorting states
+        let leaderboardSort = { column: 'passRate', direction: 'desc' };
+        let resultsSort = { column: 'round', direction: 'asc' };
+
+        // Constants
+        const ROUNDS_PER_FILE = 30;
+
+        // ═══════════════════════════════════════════════════════════
+        // Initialize: Load Manifest & Reset Filters
+        // ═══════════════════════════════════════════════════════════
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Handle Hash-based tab switching for external navigation
+            if (window.location.hash === '#phrase-intel') {
+                switchTab('phrase-intel', document.getElementById('nav-phrase-intel'));
+            }
+
+            // Force reset of all inputs to prevent browser memory on refresh
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(i => {
+                if (i.type === 'checkbox') i.checked = true;
+                else if (i.type === 'range') i.value = 0;
+            });
+            document.getElementById('dangerValue').textContent = '0';
+
+            // Load aggregate manifest
+            try {
+                const resp = await fetch('agg_manifest.json');
+                if (resp.ok) aggManifest = await resp.json();
+            } catch (e) { console.warn('Manifest load failed', e); }
+
+            // Populate file list
+            const group = document.getElementById('individualFilesGroup');
+            if (group) {
+                ALL_RESULT_FILES.forEach(f => {
+                    const p = parseFileName(f);
+                    const opt = document.createElement('option');
+                    opt.value = 'file:' + f;
+                    opt.textContent = p ? `RT: ${p.rt}  |  Judge: ${p.judge}` : f;
+                    group.appendChild(opt);
+                });
+            }
+
+            // Setup IntersectionObserver for lazy results
+            const resultsSection = document.getElementById('resultsSection');
+            const observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && !isRawLoaded && currentFilePath) {
+                    console.log('Lazy results visible - triggering load');
+                    // We don't auto-load for Master because it's huge, but for single files we could.
+                    // For now, let user click to be safe, or auto-load if small.
+                }
+            }, { threshold: 0.1 });
+            observer.observe(resultsSection);
+        });
+
+        // ═══════════════════════════════════════════════════════════
+        // Load the selected option
+        // ═══════════════════════════════════════════════════════════
+        async function loadSelectedFile() {
+            const val = document.getElementById('jsonFileSelect').value;
+            if (!val) { showError('Please select something to load.'); return; }
+
+            document.getElementById('loadingMessage').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'none';
+            
+            // Re-lock results
+            isRawLoaded = false;
+            document.getElementById('resultsLazyGate').style.display = 'flex';
+            document.getElementById('resultsContent').style.display = 'none';
+            document.getElementById('resultCountBadge').style.display = 'none';
+
+            try {
+                // Try Fast Path (Aggregate)
+                let aggFname = null;
+                if (aggManifest) {
+                    if (val === 'group:master') aggFname = aggManifest.master;
+                    else if (val.startsWith('group:rt:')) {
+                        const m = val.replace('group:rt:', '');
+                        aggFname = aggManifest.groups_rt[m];
+                    } else if (val.startsWith('group:judge:')) {
+                        const m = val.replace('group:judge:', '');
+                        aggFname = aggManifest.groups_judge[m];
+                    } else if (val.startsWith('file:')) {
+                        const f = val.replace('file:', '');
+                        aggFname = aggManifest.files[f];
+                    }
+                }
+
+                if (aggFname) {
+                    console.log('Using Fast Path:', aggFname);
+                    const resp = await fetch(aggFname);
+                    if (resp.ok) {
+                        currentAgg = await resp.json();
+                        currentFilePath = val;
+                        allData = []; // Clear raw data
+                        initializeDashboard(true);
+                        document.getElementById('loadingMessage').style.display = 'none';
+                        document.getElementById('mainContent').style.display = 'block';
+                        return;
+                    }
+                }
+
+                // Fallback to Legacy Path (Parsing raw row by row)
+                console.log('Falling back to Legacy Path...');
+                if (val.startsWith('group:')) {
+                    await loadMultipleFiles(filesForGroup(val), val);
+                } else if (val.startsWith('file:')) {
+                    await loadSingleFile(val.replace('file:', ''));
+                }
+                document.getElementById('loadingMessage').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+            } catch (err) {
+                showError('Error loading data: ' + err.message);
+                document.getElementById('loadingMessage').style.display = 'none';
+            }
+        }
+
+        async function loadRawDataOnDemand() {
+            const val = currentFilePath;
+            const gate = document.getElementById('resultsLazyGate');
+            const btn  = gate.querySelector('button');
+            const note = gate.querySelector('.lazy-note');
+
+            btn.disabled = true;
+            btn.textContent = 'Loading Raw Files...';
+            note.textContent = 'Fetching and parsing row-level data for this selection. This may take a few seconds.';
+
+            try {
+                let combined = [];
+                if (val === 'file:' + currentFilePath || (!val.startsWith('group:') && !val.startsWith('file:'))) {
+                     // Single file case
+                     const fname = val.startsWith('file:') ? val.replace('file:', '') : currentFilePath;
+                     const resp = await fetch(fname);
+                     const txt = await resp.text();
+                     combined = txt.trim().split('\n').filter(Boolean).map(l => JSON.parse(l));
+                } else if (val.startsWith('group:')) {
+                     // Multiple files case
+                     const files = filesForGroup(val);
+                     for (let i = 0; i < files.length; i++) {
+                        const resp = await fetch(files[i]);
+                        const txt = await resp.text();
+                        const rows = txt.trim().split('\n').filter(Boolean).map(line => {
+                            const r = JSON.parse(line);
+                            r.round = (r.round || 0) + (i * ROUNDS_PER_FILE);
+                            return r;
+                        });
+                        combined.push(...rows);
+                        btn.textContent = `Progress: ${Math.round((i/files.length)*100)}%`;
+                     }
+                }
+
+                allData = combined;
+                filteredData = [...allData];
+                isRawLoaded = true;
+                
+                gate.style.display = 'none';
+                document.getElementById('resultsContent').style.display = 'block';
+                document.getElementById('resultCountBadge').style.display = 'block';
+                
+                applyFilters();
+            } catch (e) {
+                btn.disabled = false;
+                btn.textContent = 'Retry Loading';
+                alert('Load failed: ' + e.message);
+            }
+        }
+
+        // ─── Load a single JSONL file (no round offset) ──────────
+        async function loadSingleFile(filename) {
+            const resp = await fetch(filename);
+            if (!resp.ok) throw new Error('Could not fetch ' + filename);
+            const text = await resp.text();
+            const data = text.trim().split('\n').filter(Boolean).map(l => JSON.parse(l));
+
+            const p = parseFileName(filename);
+            document.getElementById('headerSubtitle').textContent =
+                p ? `Red Team: ${p.rt}  |  Judge: ${p.judge}` : filename;
+
+            document.getElementById('fileInfo').innerHTML =
+                `<strong>Loaded:</strong> ${filename} &mdash; ${data.length} results`;
+            document.getElementById('fileInfo').style.display = 'block';
+            document.getElementById('loadProgress').style.display = 'none';
+
+            currentFilePath = filename;
+            allData = data;
+            filteredData = [...allData];
+            initializeDashboard();
+        }
+
+        // ─── Load & combine multiple files with sequential rounds ─
+        async function loadMultipleFiles(files, groupLabel) {
+            const progressDiv = document.getElementById('loadProgress');
+            const progressBar = document.getElementById('loadProgressBar');
+            const progressText = document.getElementById('loadProgressText');
+            progressDiv.style.display = 'block';
+            progressBar.style.width = '0%';
+            progressText.textContent = `Loading 0 / ${files.length} files...`;
+
+            const combined = [];
+            let loaded = 0;
+
+            // Fetch in batches of 10 to avoid too many parallel requests
+            const batchSize = 10;
+            for (let i = 0; i < files.length; i += batchSize) {
+                const batch = files.slice(i, i + batchSize);
+                const results = await Promise.all(batch.map(async (f, batchIdx) => {
+                    const fileIndex = i + batchIdx;
+                    const roundOffset = fileIndex * ROUNDS_PER_FILE;
+                    try {
+                        const resp = await fetch(f);
+                        if (!resp.ok) return [];
+                        const txt = await resp.text();
+                        return txt.trim().split('\n').filter(Boolean).map(line => {
+                            const row = JSON.parse(line);
+                            row.round = (row.round || 0) + roundOffset;
+                            row._source_file = f;
+                            return row;
+                        });
+                    } catch (e) { return []; }
+                }));
+                results.forEach(arr => combined.push(...arr));
+                loaded += batch.length;
+                const pct = Math.round((loaded / files.length) * 100);
+                progressBar.style.width = pct + '%';
+                progressText.textContent = `Loading ${loaded} / ${files.length} files...`;
+            }
+
+            progressText.textContent =
+                `Loaded ${files.length} files - ${combined.length} total results`;
+
+            // Update fileInfo with group context
+            let groupDesc = '';
+            if (groupLabel === 'group:master') {
+                groupDesc = 'Master — All 90 Pairings Combined';
+            } else {
+                const parts = groupLabel.split(':');
+                const type = parts[1];
+                const model = parts.slice(2).join(':');
+                groupDesc = type === 'rt'
+                    ? `All pairings with Red Team: ${model}`
+                    : `All pairings with Judge: ${model}`;
+            }
+
+            document.getElementById('fileInfo').innerHTML =
+                `<strong>${groupDesc}</strong> &mdash; ${files.length} files, ${combined.length} results`;
+            document.getElementById('fileInfo').style.display = 'block';
+
+            currentFilePath = groupLabel;
+            allData = combined;
+            filteredData = [...allData];
+            initializeDashboard();
+        }
+
+        // Load raw results data (compatibility shim)
+        function loadRawResults(results) {
+            allData = results;
+            filteredData = [...allData];
+            initializeDashboard();
+        }
+
+        // Initialize dashboard with loaded data
+        function initializeDashboard(useAgg = false) {
+            // Populate model filters
+            const models = useAgg ? currentAgg.meta.models : [...new Set(allData.map(d => d.target_model))].sort();
+            const modelFilters = document.getElementById('modelFilters');
+            modelFilters.innerHTML = '<strong style="width: 100%; margin-bottom: 10px; display: block;">Models:</strong>';
+            models.forEach(model => {
+                const div = document.createElement('div');
+                div.className = 'filter-item';
+                div.innerHTML = `
+            <input type="checkbox" id="model-${model}" checked onchange="applyFilters()">
+            <label for="model-${model}">${model}</label>
+        `;
+                modelFilters.appendChild(div);
+            });
+
+            // Populate category filters
+            const categories = useAgg ? currentAgg.meta.categories : [...new Set(allData.map(d => d.attack_category))].sort();
+            const categoryFilters = document.getElementById('categoryFilters');
+            categoryFilters.innerHTML = '<strong style="width: 100%; margin-bottom: 10px; display: block;">Categories:</strong>';
+            categories.forEach((category, idx) => {
+                const div = document.createElement('div');
+                div.className = 'filter-item';
+                const catId = 'cat-' + idx;
+                div.innerHTML = `
+            <input type="checkbox" class="cat-filter" id="category-${catId}" data-category="${category}" checked onchange="applyFilters()">
+            <label for="category-${catId}">${category.replace(/_/g, ' ')}</label>
+        `;
+                categoryFilters.appendChild(div);
+            });
+
+            // Handle slider lock for option B
+            const sliderCont = document.querySelector('.danger-slider-container');
+            if (useAgg) {
+                sliderCont.classList.add('slider-locked');
+                let msg = sliderCont.querySelector('.slider-lock-msg');
+                if (!msg) {
+                    msg = document.createElement('div');
+                    msg.className = 'slider-lock-msg';
+                    msg.innerHTML = '⚠️ Slider requires loading Detailed Results first';
+                    sliderCont.appendChild(msg);
+                }
+            } else {
+                sliderCont.classList.remove('slider-locked');
+            }
+
+            applyFilters();
+        }
+
+        // Apply filters
+        function applyFilters() {
+            if (!isRawLoaded) {
+                updateDashboard();
+                return;
+            }
+
+            const fSafe = document.getElementById('filterSafe')?.checked ?? true;
+            const fPart = document.getElementById('filterPartial')?.checked ?? true;
+            const fViol = document.getElementById('filterViolation')?.checked ?? true;
+            const threshold = parseInt(document.getElementById('dangerScoreSlider')?.value ?? 0);
+            const search = document.getElementById('promptSearch')?.value.toLowerCase().trim() ?? '';
+
+            const selModels = Array.from(document.querySelectorAll('[id^="model-"]:checked')).map(i => i.id.replace('model-', ''));
+            const selCats = Array.from(document.querySelectorAll('.cat-filter:checked')).map(i => i.dataset.category);
+
+            filteredData = allData.filter(d => {
+                const l = (d.label || '').toLowerCase();
+                const isSafe = l.includes('safe') || l === 'refusal';
+                const isPart = l.includes('partial');
+                const isViol = l.includes('violation');
+                
+                const pLabel = (isSafe && fSafe) || (isPart && fPart) || (isViol && fViol);
+                const pModel = selModels.includes(d.target_model);
+                const pCat   = selCats.includes(d.attack_category);
+                const pRange = (d.danger_score || 0) >= threshold;
+                const pSearch = !search || d.attack_prompt.toLowerCase().includes(search);
+                
+                return pLabel && pModel && pCat && pRange && pSearch;
+            });
+
+            currentPage = 1; // Reset to first page on filter
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            updateSummaryCards();
+            updateCharts();
+            updateLeaderboard();
+            updateResultsTable();
+        }
+
+        function updateSummaryCards() {
+            let s;
+            if (isRawLoaded) {
+                const safeCount = filteredData.filter(d => {
+                    const l = (d.label || '').toLowerCase();
+                    return l.includes('safe') || l === 'refusal';
+                }).length;
+                s = {
+                    total_rounds: allData.length > 0 ? Math.max(...allData.map(d => d.round)) : 0,
+                    models_count: new Set(allData.map(d => d.target_model)).size,
+                    avg_danger: filteredData.length > 0 ? (filteredData.reduce((a,b) => a+(b.danger_score||0), 0) / filteredData.length).toFixed(1) : '0.0',
+                    safety_rate_pct: filteredData.length > 0 ? ((safeCount / filteredData.length) * 100).toFixed(0) : '0'
+                };
+            } else if (currentAgg) {
+                s = currentAgg.summary_cards;
+            } else return;
+
+            document.getElementById('totalRounds').textContent = s.total_rounds;
+            document.getElementById('modelsCount').textContent = s.models_count;
+            document.getElementById('avgDanger').textContent = s.avg_danger;
+            document.getElementById('safetyRate').textContent = s.safety_rate_pct + '%';
+        }
+
+        // Chart instances
+        let labelChart, categoryChart, modelPassFailChart, categoryPassFailChart, trendChart, cumulativeDangerChart, dangerScoreChart, dangerDistChart;
+
+        const CHART_COLORS = ['#00f2fe', '#4facfe', '#a78bfa', '#34d399', '#fb923c', '#f472b6', '#60a5fa', '#facc15', '#2dd4bf', '#f87171'];
+        const AXIS_OPTS = { 
+            grid: { color: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.06)' }, 
+            ticks: { color: '#64748b' },
+            title: { color: '#94a3b8', font: { size: 11, weight: 600 } }
+        };
+
+        function updateCharts() {
+            updateLabelChart();
+            updateCategoryChart();
+            updateModelPassFailChart();
+            updateCategoryPassFailChart();
+            updateHeatmap();
+            updateTrendChart();
+            updateCumulativeDangerChart();
+            updateDangerScoreChart();
+            updateDangerDistChart();
+        }
+
+        function createDoughnutChart(id, labels, data, colors) {
+            const ctx = document.getElementById(id).getContext('2d');
+            return new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels, datasets: [{ data, backgroundColor: colors.map(c => c + 'bb'), borderWidth: 1 }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'right' } } }
+            });
+        }
+
+        function updateLabelChart() {
+            let labels = ['Safe Refusal', 'Partial Compliance', 'Policy Violation'], data;
+            if (isRawLoaded) {
+                const counts = { safe: 0, partial: 0, violation: 0 };
+                filteredData.forEach(d => {
+                    const l = (d.label || '').toLowerCase();
+                    if (l.includes('safe') || l === 'refusal') counts.safe++;
+                    else if (l.includes('partial')) counts.partial++;
+                    else counts.violation++;
+                });
+                data = [counts.safe, counts.partial, counts.violation];
+            } else if (currentAgg) {
+                const lc = currentAgg.label_counts;
+                data = [lc.safe_refusal || 0, lc.partial_compliance || 0, lc.policy_violation || 0];
+            } else return;
+
+            if (labelChart) labelChart.destroy();
+            labelChart = createDoughnutChart('labelChart', labels, data, ['#10b981', '#f59e0b', '#ef4444']);
+        }
+
+        function updateCategoryChart() {
+            let labels, data;
+            if (isRawLoaded) {
+                const map = {};
+                filteredData.forEach(d => { 
+                    const c = (d.attack_category || 'Other').replace(/_/g, ' ');
+                    map[c] = (map[c] || 0) + 1;
+                });
+                const sorted = Object.entries(map).sort((a,b) => b[1] - a[1]);
+                labels = sorted.map(e => e[0]); data = sorted.map(e => e[1]);
+            } else if (currentAgg) {
+                const sorted = Object.entries(currentAgg.category_stats).sort((a,b) => b[1].total - a[1].total);
+                labels = sorted.map(e => e[0].replace(/_/g, ' ')); data = sorted.map(e => e[1].total);
+            } else return;
+
+            if (categoryChart) categoryChart.destroy();
+            categoryChart = createDoughnutChart('categoryChart', labels, data, CHART_COLORS);
+        }
+
+        function updateModelPassFailChart() {
+            let models, passed, failed;
+            if (isRawLoaded) {
+                const stats = {};
+                filteredData.forEach(d => {
+                    if (!stats[d.target_model]) stats[d.target_model] = { p: 0, f: 0 };
+                    const l = (d.label || '').toLowerCase();
+                    if (l.includes('safe') || l === 'refusal') stats[d.target_model].p++; else stats[d.target_model].f++;
+                });
+                models = Object.keys(stats).sort();
+                passed = models.map(m => stats[m].p); failed = models.map(m => stats[m].f);
+            } else if (currentAgg) {
+                models = Object.keys(currentAgg.model_stats).sort();
+                passed = models.map(m => currentAgg.model_stats[m].safe);
+                failed = models.map(m => currentAgg.model_stats[m].total - currentAgg.model_stats[m].safe);
+            } else return;
+
+            if (modelPassFailChart) modelPassFailChart.destroy();
+            modelPassFailChart = new Chart(document.getElementById('modelPassFailChart'), {
+                type: 'bar',
+                data: { labels: models, datasets: [{ label: 'Safe', data: passed, backgroundColor: '#10b981' }, { label: 'Violation', data: failed, backgroundColor: '#ef4444' }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ...AXIS_OPTS }, y: { stacked: true, ...AXIS_OPTS } } }
+            });
+        }
+
+        function updateCategoryPassFailChart() {
+            let cats, passed, failed;
+            if (isRawLoaded) {
+                const stats = {};
+                filteredData.forEach(d => {
+                    const c = d.attack_category || 'Other';
+                    if (!stats[c]) stats[c] = { p: 0, f: 0 };
+                    const l = (d.label || '').toLowerCase();
+                    if (l.includes('safe') || l === 'refusal') stats[c].p++; else stats[c].f++;
+                });
+                cats = Object.keys(stats).sort();
+                passed = cats.map(c => stats[c].p); failed = cats.map(c => stats[c].f);
+            } else if (currentAgg) {
+                cats = Object.keys(currentAgg.category_stats).sort();
+                passed = cats.map(c => currentAgg.category_stats[c].safe);
+                failed = cats.map(c => (currentAgg.category_stats[c].total - currentAgg.category_stats[c].safe));
+            } else return;
+
+            if (categoryPassFailChart) categoryPassFailChart.destroy();
+            categoryPassFailChart = new Chart(document.getElementById('categoryPassFailChart'), {
+                type: 'bar',
+                data: { labels: cats.map(c => c.replace(/_/g, ' ')), datasets: [{ label: 'Safe', data: passed, backgroundColor: '#10b981' }, { label: 'Violation', data: failed, backgroundColor: '#ef4444' }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ...AXIS_OPTS }, y: { stacked: true, ...AXIS_OPTS } } }
+            });
+        }
+
+        function updateHeatmap() {
+            const cont = document.getElementById('heatmapContainer');
+            let models, cats, map;
+            if (isRawLoaded) {
+                models = [...new Set(filteredData.map(d => d.target_model))].sort();
+                cats = [...new Set(filteredData.map(d => d.attack_category))].sort();
+                map = {};
+                models.forEach(m => {
+                    map[m] = {};
+                    cats.forEach(c => {
+                        const items = filteredData.filter(d => d.target_model === m && d.attack_category === c);
+                        const safe = items.filter(d => (d.label||'').toLowerCase().includes('safe') || d.label === 'refusal').length;
+                        map[m][c] = items.length > 0 ? (safe / items.length) : null;
+                    });
+                });
+            } else if (currentAgg) {
+                models = currentAgg.meta.models; cats = currentAgg.meta.categories;
+                map = {};
+                models.forEach(m => { map[m] = {}; cats.forEach(c => { map[m][c] = currentAgg.heatmap[m]?.[c]?.pass_rate ?? null; }); });
+            } else return;
+
+            let h = '<table class="heatmap-table"><thead><tr><th>Model / Category</th>' + cats.map(c => `<th>${c.replace(/_/g, ' ')}</th>`).join('') + '</tr></thead><tbody>';
+            models.forEach(m => {
+                h += `<tr><td class="model-name">${m}</td>` + cats.map(c => {
+                    const r = map[m][c];
+                    let bg = 'rgba(255,255,255,0.02)', val = 'N/A';
+                    if (r !== null) {
+                        val = (r * 100).toFixed(0) + '%';
+                        if (r >= 0.9) bg = 'rgba(16, 185, 129, 0.4)';
+                        else if (r >= 0.7) bg = 'rgba(16, 185, 129, 0.2)';
+                        else if (r >= 0.5) bg = 'rgba(245, 158, 11, 0.2)';
+                        else bg = 'rgba(239, 68, 68, 0.3)';
+                    }
+                    return `<td style="background:${bg}">${val}</td>`;
+                }).join('') + '</tr>';
+            });
+            cont.innerHTML = h + '</tbody></table>';
+        }
+
+        function updateTrendChart() {
+            let datasets = [], rounds = [];
+            if (isRawLoaded) {
+                const models = [...new Set(allData.map(d => d.target_model))].sort();
+                rounds = [...new Set(allData.map(d => d.round))].sort((a,b) => a-b).filter((_, i) => i % 5 === 0);
+                datasets = models.map((m, idx) => {
+                    const modelRows = allData.filter(d => d.target_model === m);
+                    return { label: m, borderColor: CHART_COLORS[idx % 10], pointRadius: 0, tension: 0.1, data: rounds.map(r => {
+                        const cum = modelRows.filter(d => d.round <= r);
+                        if (cum.length === 0) return null;
+                        const safe = cum.filter(d => (d.label||'').toLowerCase().includes('safe') || d.label === 'refusal').length;
+                        return (safe / cum.length) * 100;
+                    })};
+                });
+            } else if (currentAgg) {
+                rounds = Object.keys(Object.values(currentAgg.trend)[0] || {}).map(Number).sort((a,b)=>a-b);
+                datasets = currentAgg.meta.models.map((m, idx) => ({
+                    label: m, borderColor: CHART_COLORS[idx % 10], pointRadius: 0, tension: 0.1, data: rounds.map(r => currentAgg.trend[m]?.[r] ?? null)
+                }));
+            } else return;
+
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            if (trendChart) trendChart.destroy();
+            trendChart = new Chart(ctx, {
+                type: 'line', data: { labels: rounds, datasets },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100, title: { display: true, text: 'Safety Pass Rate %' }, ...AXIS_OPTS }, x: AXIS_OPTS } }
+            });
+        }
+
+        function updateCumulativeDangerChart() {
+            let datasets = [], rounds = [];
+            if (isRawLoaded) {
+                const models = [...new Set(allData.map(d => d.target_model))].sort();
+                rounds = [...new Set(allData.map(d => d.round))].sort((a,b) => a-b).filter((_, i) => i % 5 === 0);
+                datasets = models.map((m, idx) => {
+                    const modelRows = allData.filter(d => d.target_model === m);
+                    return { label: m, borderColor: CHART_COLORS[idx % 10], pointRadius: 0, tension: 0.1, data: rounds.map(r => {
+                        const cum = modelRows.filter(d => d.round <= r);
+                        if (cum.length === 0) return null;
+                        return cum.reduce((a,b) => a+(b.danger_score||0), 0) / cum.length;
+                    })};
+                });
+            } else if (currentAgg) {
+                rounds = Object.keys(Object.values(currentAgg.cumulative_danger)[0] || {}).map(Number).sort((a,b)=>a-b);
+                datasets = currentAgg.meta.models.map((m, idx) => ({
+                    label: m, borderColor: CHART_COLORS[idx % 10], pointRadius: 0, tension: 0.1, data: rounds.map(r => currentAgg.cumulative_danger[m]?.[r] ?? null)
+                }));
+            } else return;
+
+            const ctx = document.getElementById('cumulativeDangerChart').getContext('2d');
+            if (cumulativeDangerChart) cumulativeDangerChart.destroy();
+            cumulativeDangerChart = new Chart(ctx, {
+                type: 'line', data: { labels: rounds, datasets },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 10, title: { display: true, text: 'Cumulative Avg Danger' }, ...AXIS_OPTS }, x: AXIS_OPTS } }
+            });
+        }
+
+        function updateDangerScoreChart() {
+            let labels, data;
+            if (isRawLoaded) {
+                const map = {};
+                filteredData.forEach(d => { map[d.target_model] = map[d.target_model] || { s: 0, c: 0 }; map[d.target_model].s += (d.danger_score||0); map[d.target_model].c++; });
+                labels = Object.keys(map).sort(); data = labels.map(l => (map[l].s / map[l].c).toFixed(2));
+            } else if (currentAgg) {
+                labels = Object.keys(currentAgg.model_stats).sort(); data = labels.map(l => currentAgg.model_stats[l].avg_danger);
+            } else return;
+
+            if (dangerScoreChart) dangerScoreChart.destroy();
+            dangerScoreChart = new Chart(document.getElementById('dangerScoreChart'), {
+                type: 'bar', data: { labels, datasets: [{ data, backgroundColor: '#ef4444' }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 10, ...AXIS_OPTS }, x: AXIS_OPTS }, plugins: { legend: { display: false } } }
+            });
+        }
+
+        function updateDangerDistChart() {
+            let data, labels = ["0-1", "1-2", "2-3", "3-4", "4-5", "5-6", "6-7", "7-8", "8-9", "9-10"];
+            if (isRawLoaded) {
+                data = new Array(10).fill(0);
+                filteredData.forEach(d => { let idx = Math.min(9, Math.floor(d.danger_score || 0)); data[idx]++; });
+            } else if (currentAgg) { data = currentAgg.danger_dist; labels = currentAgg.danger_bucket_labels; } else return;
+
+            if (dangerDistChart) dangerDistChart.destroy();
+            dangerDistChart = new Chart(document.getElementById('dangerDistributionChart'), {
+                type: 'bar', data: { labels, datasets: [{ data, backgroundColor: '#fb923c' }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: AXIS_OPTS, x: AXIS_OPTS } }
+            });
+        }
+
+        function getDangerScoreColor(s) {
+            if (s >= 8) return '#ef4444'; 
+            if (s >= 6) return '#f59e0b'; 
+            if (s >= 4) return '#fbbf24'; 
+            return '#10b981';
+        }
+
+        function updateLeaderboard() {
+            const tbody = document.getElementById('leaderboardBody');
+            let stats = [];
+
+            if (isRawLoaded) {
+                const map = {};
+                allData.forEach(d => {
+                    if (!map[d.target_model]) map[d.target_model] = { s: 0, p: 0, v: 0, t: 0, d: 0 };
+                    const l = (d.label || '').toLowerCase();
+                    map[d.target_model].t++; map[d.target_model].d += (d.danger_score || 0);
+                    if (l.includes('safe') || l === 'refusal') map[d.target_model].s++;
+                    else if (l.includes('partial')) map[d.target_model].p++;
+                    else map[d.target_model].v++;
+                });
+                stats = Object.entries(map).map(([m, d]) => ({
+                    model: m, safe: d.s, partial: d.p, violation: d.v, avgDanger: d.d/d.t, passRate: (d.s/d.t)*100
+                }));
+            } else if (currentAgg) {
+                stats = Object.entries(currentAgg.model_stats).map(([m, d]) => ({
+                    model: m, safe: d.safe, partial: d.partial, violation: d.violation, avgDanger: d.avg_danger, passRate: d.pass_rate_pct
+                }));
+            }
+
+            stats.sort((a,b) => b.passRate - a.passRate);
+            tbody.innerHTML = stats.map((s, i) => `
+                <tr>
+                    <td class="rank">${i+1}</td>
+                    <td class="model">${s.model}</td>
+                    <td>${s.safe}</td>
+                    <td>${s.partial}</td>
+                    <td>${s.violation}</td>
+                    <td style="color:${getDangerScoreColor(s.avgDanger)}; font-weight:700;">${Number(s.avgDanger).toFixed(2)}</td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div style="flex:1; height:6px; background:rgba(255,255,255,0.05); border-radius:3px; overflow:hidden;">
+                                <div style="width:${s.passRate}%; height:100%; background:linear-gradient(90deg,#10b981,#34d399);"></div>
+                            </div>
+                            <span style="font-weight:700; font-size:0.9em;">${Number(s.passRate).toFixed(1)}%</span>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateResultsTable() {
+            const tbody = document.getElementById('resultsBody');
+            if (!isRawLoaded) {
+                tbody.innerHTML = '<tr><td colspan="7" class="no-results">Details hidden on Fast Path. Load raw data to view.</td></tr>';
+                return;
+            }
+
+            const total = filteredData.length;
+            const pages = Math.ceil(total / rowsPerPage) || 1;
+            if (currentPage > pages) currentPage = pages;
+            
+            document.getElementById('currentPage').textContent = currentPage;
+            document.getElementById('totalPages').textContent = pages;
+            document.getElementById('resultCount').textContent = total;
+
+            const start = (currentPage - 1) * rowsPerPage;
+            const dataSlice = filteredData.slice(start, start + rowsPerPage);
+
+            tbody.innerHTML = dataSlice.map((d, i) => {
+                const l = (d.label || '').toLowerCase();
+                const cls = (l.includes('safe') || l === 'refusal') ? 'safe' : (l.includes('partial') ? 'warn' : 'violation');
+                const badgeCls = (l.includes('safe') || l === 'refusal') ? 'safe' : 'violation';
+                return `
+                <tr>
+                    <td>${d.round}</td>
+                    <td><strong>${d.target_model}</strong></td>
+                    <td>${d.attack_category.replace(/_/g, ' ')}</td>
+                    <td><span class="badge ${badgeCls}">${l.toUpperCase()}</span></td>
+                    <td style="color:${getDangerScoreColor(d.danger_score||0)}; font-weight:700;">${d.danger_score||0}</td>
+                    <td style="font-size:0.85em; color:var(--text-dim);">${new Date(d.timestamp).toLocaleString()}</td>
+                    <td><button class="expand-btn" style="padding:4px 8px; font-size:0.8em;" onclick="toggleDetails(${start+i})">Details</button></td>
+                </tr>
+                <tr id="details-row-${start+i}" class="response-detail-row">
+                    <td colspan="7">
+                        <div class="response-detail-content">
+                            <h4 style="color:#00f2fe; margin-bottom:4px;">Model Response:</h4><p style="color:var(--text-main); margin-bottom:12px;">${d.model_response}</p>
+                            <h4 style="color:#00f2fe; margin-bottom:4px;">Danger Analysis:</h4><p style="font-style:italic; font-size:0.95em;">${d.reason}</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            }).join('');
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // Phrase Intelligence Logic
+        // ═══════════════════════════════════════════════════════════
+        let phraseIntel = null;
+        let volatilityChart = null;
+
+        function switchTab(tab, el) {
+            document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
+            el.classList.add('active');
+
+            const dashboard = document.getElementById('dashboardView');
+            const intelView = document.getElementById('phraseIntelView');
+
+            if (tab === 'dashboard') {
+                dashboard.style.display = 'block';
+                intelView.style.display = 'none';
+            } else {
+                dashboard.style.display = 'none';
+                intelView.style.display = 'block';
+                // Show main container even if data hasn't been loaded in regular dashboard yet
+                document.getElementById('mainContent').style.display = 'block';
+                if (!phraseIntel) loadPhraseIntel();
+            }
+        }
+
+        async function loadPhraseIntel() {
+            try {
+                const resp = await fetch('../phrase_intelligence.json');
+                phraseIntel = await resp.json();
+                renderPhraseIntel();
+            } catch (e) {
+                console.error('Failed to load phrase intelligence', e);
+            }
+        }
+
+        function renderPhraseIntel() {
+            if (!phraseIntel) return;
+
+            // Render Keywords
+            const renderKeywords = (id, list) => {
+                const container = document.getElementById(id);
+                container.innerHTML = list.map(([word, count]) => `
+                    <div class="keyword-tag">
+                        <span>${word}</span>
+                        <span class="count">${count}</span>
+                    </div>
+                `).join('');
+            };
+
+            renderKeywords('dangerousKeywords', phraseIntel.keywords.dangerous);
+            renderKeywords('volatileKeywords', phraseIntel.keywords.volatile);
+            renderKeywords('safeKeywords', phraseIntel.keywords.safe);
+
+            // Render Scatter Plot
+            const ctx = document.getElementById('volatilityMatrix').getContext('2d');
+            if (volatilityChart) volatilityChart.destroy();
+
+            // Downsample if too many for performance (all_stats can be large)
+            const scatterData = phraseIntel.all_stats.filter(s => s.count > 0).map(s => ({
+                x: s.avg,
+                y: s.std_dev,
+                prompt: s.prompt
+            }));
+
+            volatilityChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Phrases',
+                        data: scatterData,
+                        backgroundColor: (context) => {
+                            const val = context.raw?.x || 0;
+                            const std = context.raw?.y || 0;
+                            if (std > 2.5) return 'rgba(245, 158, 11, 0.6)'; // Volatile
+                            if (val > 6) return 'rgba(239, 68, 68, 0.6)'; // Dangerous
+                            return 'rgba(16, 185, 129, 0.6)'; // Safe
+                        },
+                        pointRadius: 6,
+                        hoverRadius: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Average Danger Score (0-10)', color: '#94a3b8' },
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            min: 0, max: 10
+                        },
+                        y: {
+                            title: { display: true, text: 'Volatility (Standard Deviation)', color: '#94a3b8' },
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            min: 0, max: 6
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const p = context.raw.prompt;
+                                    return `Avg: ${context.raw.x.toFixed(2)}, Vol: ${context.raw.y.toFixed(2)} | Phrase: ${p.substring(0, 100)}...`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Setup results table sort handlers
+        function setupResultsSorting() {
+            document.querySelectorAll('.results-table th.sortable').forEach(th => {
+                th.addEventListener('click', () => {
+                    const column = th.dataset.column;
+                    if (resultsSort.column === column) {
+                        resultsSort.direction = resultsSort.direction === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        resultsSort.column = column;
+                        resultsSort.direction = column === 'dangerScore' ? 'desc' : 'asc';
+                    }
+                    updateResultsTable();
+                });
+            });
+        }
+
+        function toggleDetails(index) {
+            const detailRow = document.getElementById(`details-row-${index}`);
+            detailRow.classList.toggle('expanded');
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function setupLeaderboardSorting() {
+            document.querySelectorAll('.leaderboard-table th.sortable').forEach(th => {
+                th.addEventListener('click', () => {
+                    const col = th.dataset.column;
+                    if (leaderboardSort.column === col) {
+                        leaderboardSort.direction = leaderboardSort.direction === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        leaderboardSort.column = col;
+                        leaderboardSort.direction = 'desc';
+                    }
+                    updateLeaderboard();
+                });
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setupLeaderboardSorting();
+            setupResultsSorting();
+            setupDangerScoreSlider();
+        });
+    </script>
+</body>
+
+</html>
