@@ -1165,9 +1165,7 @@
             </div>
         </div>
 
-        <!-- Phrase         </div>
-    </div>
-     </div>
+        <!-- Phrase Intelligence Module removed - redirected to phrase_intel.html -->
     </div>
 
     <script>
@@ -1345,48 +1343,60 @@
         // Constants
         const ROUNDS_PER_FILE = 30;
 
-        // ═══════════════════════════════════════════════════════════
-        // Initialize: Load Manifest & Reset Filters
-        // ═══════════════════════════════════════════════════════════
-        document.addEventListener('DOMContentLoaded', async () => {
-
-            // Force reset of all inputs to prevent browser memory on refresh
-            const inputs = document.querySelectorAll('input, select');
-            inputs.forEach(i => {
-                if (i.type === 'checkbox') i.checked = true;
-                else if (i.type === 'range') i.value = 0;
-            });
-            document.getElementById('dangerValue').textContent = '0';
-
-            // Load aggregate manifest
-            try {
-                const resp = await fetch('agg_manifest.json');
-                if (resp.ok) aggManifest = await resp.json();
-            } catch (e) { console.warn('Manifest load failed', e); }
-
-            // Populate file list
-            const group = document.getElementById('individualFilesGroup');
-            if (group) {
-                ALL_RESULT_FILES.forEach(f => {
-                    const p = parseFileName(f);
-                    const opt = document.createElement('option');
-                    opt.value = 'file:' + f;
-                    opt.textContent = p ? `RT: ${p.rt}  |  Judge: ${p.judge}` : f;
-                    group.appendChild(opt);
-                });
+            // ═══════════════════════════════════════════════════════════
+            // Initialize Dashboard & Setup Listeners
+            // ═══════════════════════════════════════════════════════════
+            function setupDangerScoreSlider() {
+                const slider = document.getElementById('dangerScoreSlider');
+                const val    = document.getElementById('dangerValue');
+                if (slider && val) {
+                    slider.addEventListener('input', () => {
+                        val.textContent = slider.value;
+                        applyFilters();
+                    });
+                }
             }
 
-            // Setup IntersectionObserver for lazy results
-            const resultsSection = document.getElementById('resultsSection');
-            const observer = new IntersectionObserver((entries) => {
-                if (entries[0].isIntersecting && !isRawLoaded && currentFilePath) {
-                    console.log('Lazy results visible - triggering load');
-                    // We don't auto-load for Master because it's huge, but for single files we could.
-                    // For now, let user click to be safe, or auto-load if small.
+            document.addEventListener('DOMContentLoaded', async () => {
+                setupLeaderboardSorting();
+                setupResultsSorting();
+                setupDangerScoreSlider();
+
+                // Force reset of all inputs to prevent browser memory on refresh
+                const inputs = document.querySelectorAll('input, select');
+                inputs.forEach(i => {
+                    if (i.type === 'checkbox') i.checked = true;
+                    else if (i.type === 'range') i.value = 0;
+                });
+                document.getElementById('dangerValue').textContent = '0';
+
+                // Load aggregate manifest
+                try {
+                    const resp = await fetch('agg_manifest.json');
+                    if (resp.ok) aggManifest = await resp.json();
+                } catch (e) { console.warn('Manifest load failed', e); }
+
+                // Populate file list
+                const group = document.getElementById('individualFilesGroup');
+                if (group) {
+                    ALL_RESULT_FILES.forEach(f => {
+                        const p = parseFileName(f);
+                        const opt = document.createElement('option');
+                        opt.value = 'file:' + f;
+                        opt.textContent = p ? `RT: ${p.rt}  |  Judge: ${p.judge}` : f;
+                        group.appendChild(opt);
+                    });
                 }
-            }, { threshold: 0.1 });
-            observer.observe(resultsSection);
-        });
+
+                // Setup IntersectionObserver for lazy results
+                const resultsSection = document.getElementById('resultsSection');
+                const observer = new IntersectionObserver((entries) => {
+                    if (entries[0].isIntersecting && !isRawLoaded && currentFilePath) {
+                        console.log('Lazy results visible');
+                    }
+                }, { threshold: 0.1 });
+                observer.observe(resultsSection);
+            });
 
         // ═══════════════════════════════════════════════════════════
         // Load the selected option
@@ -1547,7 +1557,8 @@
                 results.forEach(arr => combined.push(...arr));
             }
 
-            progressText.textContent =
+            const progressText = document.getElementById('loadProgressText');
+            if (progressText) progressText.textContent =
                 `Loaded ${files.length} files - ${combined.length} total results`;
 
             // Update fileInfo with group context
@@ -2079,12 +2090,8 @@
             });
         }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            setupLeaderboardSorting();
-            setupResultsSorting();
-            setupDangerScoreSlider();
-        });
+        // Initial call to setup state
+        // (Handled by the DOMContentLoaded consolidated above)
     </script>
 </body>
 
