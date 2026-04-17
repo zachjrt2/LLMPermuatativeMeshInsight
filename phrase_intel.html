@@ -228,7 +228,7 @@
 
         async function loadPhraseIntel() {
             try {
-                const resp = await fetch('../phrase_intelligence.json');
+                const resp = await fetch('phrase_intelligence.json');
                 phraseIntel = await resp.json();
                 renderPhraseIntel();
             } catch (e) {
