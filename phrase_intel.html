@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phrase Intelligence — Red Team Evaluation</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #0a0c10;
+            --surface: rgba(20, 24, 33, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #e2e8f0;
+            --text-dim: #94a3b8;
+            --accent-primary: #00f2fe;
+            --accent-secondary: #4facfe;
+            --safe: #10b981;
+            --danger: #ef4444;
+            --warn: #f59e0b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(79, 172, 254, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 242, 254, 0.05) 0%, transparent 40%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .global-header {
+            padding: 20px 40px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(10, 12, 16, 0.85);
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            grid-template-areas: "title nav";
+            gap: 12px;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .global-nav {
+            grid-area: nav;
+            display: flex;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-dim);
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-link.active {
+            color: #0a0c10;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            box-shadow: 0 4px 12px rgba(0, 242, 254, 0.3);
+        }
+
+        h1 {
+            font-size: 26px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+
+        .chart-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container h2 { margin-bottom: 20px; font-size: 1.5em; color: var(--text-dim); }
+
+        .keyword-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .keyword-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .keyword-card h4 {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            color: var(--accent-primary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .keyword-list { display: flex; flex-wrap: wrap; gap: 8px; }
+
+        .keyword-tag {
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .keyword-tag .count { color: var(--accent-secondary); font-weight: 700; }
+
+        .matrix-legend {
+            display: flex;
+            gap: 24px;
+            margin-top: 20px;
+            justify-content: center;
+            font-size: 0.9em;
+            color: var(--text-dim);
+        }
+
+        .legend-item { display: flex; align-items: center; gap: 8px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+
+        .lazy-note {
+            font-size: 0.9em;
+            color: var(--text-dim);
+            text-align: center;
+            margin-top: 20px;
+            line-height: 1.6;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+    <header class="global-header">
+        <div class="header-content">
+            <div>
+                <h1>Permutative Mesh Analysis</h1>
+                <div class="subtitle">Phrase Intelligence — Volatility & Danger Analytics</div>
+            </div>
+            <nav class="global-nav">
+                <a href="index.html" class="nav-link">Dashboard</a>
+                <a href="phrase_intel.html" class="nav-link active">Phrase Intel</a>
+                <a href="flow.html" class="nav-link">Flow Graph</a>
+                <a href="heatmapdashboard.html" class="nav-link">Heatmaps</a>
+                <a href="dashboard_final.html" class="nav-link">Adversarial Phrases</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="chart-container">
+            <h2>Volatility vs. Danger Matrix</h2>
+            <div style="height: 550px; position: relative;">
+                <canvas id="volatilityMatrix"></canvas>
+            </div>
+            <div class="matrix-legend">
+                <div class="legend-item"><span class="dot" style="background:var(--safe)"></span> Consistently Safe</div>
+                <div class="legend-item"><span class="dot" style="background:var(--warn)"></span> Volatile / Controversial</div>
+                <div class="legend-item"><span class="dot" style="background:var(--danger)"></span> Consistently Dangerous</div>
+            </div>
+            <p class="lazy-note">
+                This matrix plots phrases based on their <strong>Average Danger Score</strong> (X-axis) vs <strong>Standard Deviation</strong> (Y-axis). 
+                Phrases higher on the Y-axis indicate "volatility"—significant disagreement between different models or judges regarding the safety of that prompt.
+            </p>
+        </div>
+
+        <div class="keyword-grid">
+            <div class="keyword-card">
+                <h4>Dangerous Keywords</h4>
+                <div id="dangerousKeywords" class="keyword-list"></div>
+            </div>
+            <div class="keyword-card">
+                <h4>Volatile Keywords</h4>
+                <div id="volatileKeywords" class="keyword-list"></div>
+            </div>
+            <div class="keyword-card">
+                <h4>Safe Keywords</h4>
+                <div id="safeKeywords" class="keyword-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global Chart Defaults
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+        
+        let phraseIntel = null;
+        let volatilityChart = null;
+
+        async function loadPhraseIntel() {
+            try {
+                const resp = await fetch('../phrase_intelligence.json');
+                phraseIntel = await resp.json();
+                renderPhraseIntel();
+            } catch (e) {
+                console.error('Failed to load phrase intelligence', e);
+            }
+        }
+
+        function renderPhraseIntel() {
+            if (!phraseIntel) return;
+
+            const renderKeywords = (id, list) => {
+                const container = document.getElementById(id);
+                container.innerHTML = list.map(([word, count]) => `
+                    <div class="keyword-tag">
+                        <span>${word}</span>
+                        <span class="count">${count}</span>
+                    </div>
+                `).join('');
+            };
+
+            renderKeywords('dangerousKeywords', phraseIntel.keywords.dangerous);
+            renderKeywords('volatileKeywords', phraseIntel.keywords.volatile);
+            renderKeywords('safeKeywords', phraseIntel.keywords.safe);
+
+            const ctx = document.getElementById('volatilityMatrix').getContext('2d');
+            const scatterData = phraseIntel.all_stats.filter(s => s.count > 0).map(s => ({
+                x: s.avg,
+                y: s.std_dev,
+                prompt: s.prompt
+            }));
+
+            volatilityChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Phrases',
+                        data: scatterData,
+                        backgroundColor: (context) => {
+                            const val = context.raw?.x || 0;
+                            const std = context.raw?.y || 0;
+                            if (std > 2.5) return 'rgba(245, 158, 11, 0.6)';
+                            if (val > 6) return 'rgba(239, 68, 68, 0.6)';
+                            return 'rgba(16, 185, 129, 0.6)';
+                        },
+                        pointRadius: 6,
+                        hoverRadius: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Average Danger Score (0-10)' },
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            min: 0, max: 10
+                        },
+                        y: {
+                            title: { display: true, text: 'Volatility (Standard Deviation)' },
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            min: 0, max: 6
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const p = context.raw.prompt;
+                                    return `Avg: ${context.raw.x.toFixed(2)}, Vol: ${context.raw.y.toFixed(2)} | Phrase: ${p.substring(0, 80)}...`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadPhraseIntel);
+    </script>
+</body>
+</html>

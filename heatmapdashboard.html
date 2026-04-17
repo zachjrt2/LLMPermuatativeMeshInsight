@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Red Team Evaluation Dashboard</title>
+    <style>
+        :root {
+            --bg: #0a0c10;
+            --surface: rgba(20, 24, 33, 0.7);
+            --surface2: rgba(30, 36, 50, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent-primary: #00f2fe;
+            --accent-secondary: #4facfe;
+            --accent: #4facfe;
+            --accent2: #00f2fe;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            padding-bottom: 32px;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(79, 172, 254, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 242, 254, 0.05) 0%, transparent 40%);
+        }
+
+        .global-header {
+            padding: 20px 40px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(10, 12, 16, 0.85);
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            grid-template-areas: 
+                "title controls"
+                "nav controls";
+            gap: 12px;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header-content > div:first-child {
+            grid-area: title;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .global-nav {
+            grid-area: nav;
+            display: flex;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            justify-self: start;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-link.active {
+            color: #0a0c10;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            box-shadow: 0 4px 12px rgba(0, 242, 254, 0.3);
+        }
+
+        .global-header h1 {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            white-space: nowrap;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 4px;
+            font-weight: 500;
+            opacity: 0.8;
+        }
+
+        .stats-bar {
+            max-width: 1200px;
+            margin: 0 auto 36px;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 22px;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .stat-card .label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 4px;
+        }
+
+        .stat-card .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .stat-card .sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .tabs {
+            max-width: 1200px;
+            margin: 0 auto 24px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .tab {
+            padding: 9px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: 500;
+            transition: all 0.15s;
+        }
+
+        .tab:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        .tab.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .panel {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .panel.panel-wide {
+            max-width: 1200px;
+            padding: 0 24px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 28px;
+        }
+
+        .card h2 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+
+        .card .desc {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-bottom: 22px;
+            line-height: 1.5;
+        }
+
+        .heatmap-wrap {
+            overflow-x: auto;
+        }
+
+        .heatmap-table {
+            border-collapse: separate;
+            border-spacing: 4px;
+            font-size: 0.78rem;
+        }
+
+        .heatmap-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+            padding: 4px 8px;
+            white-space: nowrap;
+            font-size: 0.75rem;
+        }
+
+        .heatmap-table .axis-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            text-align: center;
+            padding: 8px 4px;
+            max-height: 110px;
+        }
+
+        .heatmap-table .row-label {
+            text-align: right;
+            padding-right: 10px;
+            white-space: nowrap;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .hm-cell {
+            width: 82px;
+            height: 58px;
+            border-radius: 8px;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.12s, box-shadow 0.12s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .hm-cell:hover {
+            transform: scale(1.08);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        .hm-cell .cell-val {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+        }
+
+        .hm-cell .cell-sub {
+            font-size: 0.62rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .hm-cell.empty {
+            background: var(--surface2);
+            cursor: default;
+        }
+
+        .hm-cell.empty::after {
+            content: '—';
+            color: var(--border);
+            font-size: 1rem;
+        }
+
+        .legend {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        .legend-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        #tooltip {
+            position: fixed;
+            pointer-events: none;
+            background: #1e2236;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 0.82rem;
+            z-index: 1000;
+            max-width: 260px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            display: none;
+            line-height: 1.6;
+        }
+
+        #tooltip .tt-title {
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: var(--text);
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        #tooltip .tt-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            color: var(--text-muted);
+        }
+
+        #tooltip .tt-row span:last-child {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .tt-badge {
+            display: inline-block;
+            padding: 1px 7px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            margin-right: 4px;
+        }
+
+        .rank-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .rank-table th {
+            text-align: left;
+            padding: 10px 14px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .rank-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(46, 51, 82, 0.4);
+            vertical-align: middle;
+        }
+
+        .rank-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .rank-table tr:hover td {
+            background: var(--surface2);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+
+        .badge-safe {
+            background: rgba(0, 212, 170, 0.15);
+            color: #00d4aa;
+        }
+
+        .badge-partial {
+            background: rgba(255, 180, 0, 0.15);
+            color: #ffb400;
+        }
+
+        .badge-violation {
+            background: rgba(255, 75, 75, 0.15);
+            color: #ff4b4b;
+        }
+
+        .bar-bg {
+            background: var(--surface2);
+            border-radius: 4px;
+            height: 8px;
+            overflow: hidden;
+            min-width: 80px;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 780px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .toggle-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .toggle-btn {
+            padding: 6px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.78rem;
+            transition: all 0.12s;
+        }
+
+        .toggle-btn:hover {
+            color: var(--text);
+            border-color: var(--accent);
+        }
+
+        .toggle-btn.active {
+            background: rgba(108, 99, 255, 0.2);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+    </style>
+    <script src="https://cdn.plot.ly/plotly-2.35.0.min.js"></script>
+</head>
+
+<body>
+    <div id="tooltip"></div>
+
+    <header class="global-header">
+        <div class="header-content">
+            <div>
+                <h1>Permutative Mesh Analysis</h1>
+                <div class="subtitle">Heatmaps — Cross-model attack &amp; judgment analysis</div>
+            </div>
+            <nav class="global-nav">
+                <a href="index.html" class="nav-link">Dashboard</a>
+                <a href="phrase_intel.html" class="nav-link">Phrase Intel</a>
+                <a href="flow.html" class="nav-link">Flow Graph</a>
+                <a href="heatmapdashboard.html" class="nav-link active" id="nav-heatmaps">Heatmaps</a>
+                <a href="dashboard_final.html" class="nav-link">Adversarial Phrases</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="stats-bar" id="stats-bar"></div>
+
+    <!-- MAIN CATEGORY TABS -->
+    <div class="tabs">
+        <button class="tab active" onclick="switchMainTab('heatmaps-2d')">2D Heatmaps</button>
+        <button class="tab" onclick="switchMainTab('heatmaps-3d')">3D Heatmaps</button>
+        <button class="tab" onclick="switchMainTab('rankings')">Rankings</button>
+    </div>
+
+    <!-- ==================== 2D HEATMAPS ==================== -->
+    <div class="panel active" id="tab-heatmaps-2d">
+        <!-- Relationship sub-tabs -->
+        <div class="toggle-row" style="margin-bottom:8px">
+            <button class="toggle-btn active" onclick="switch2dRelationship('rt-judge')">Red Team – Judge</button>
+            <button class="toggle-btn" onclick="switch2dRelationship('target-rt')">Target – Red Team</button>
+            <button class="toggle-btn" onclick="switch2dRelationship('target-judge')">Target – Judge</button>
+        </div>
+        <!-- Metric sub-tabs -->
+        <div class="toggle-row" id="metric-toggle">
+            <button class="toggle-btn active" data-metric="danger">Danger Score</button>
+            <button class="toggle-btn" data-metric="violation">Violation Rate</button>
+            <button class="toggle-btn" data-metric="partial">Partial Rate</button>
+            <button class="toggle-btn" data-metric="safe">Safe Refusal Rate</button>
+        </div>
+        <div class="card">
+            <h2 id="hm2d-title">Red Team – Judge: Danger Score</h2>
+            <p class="desc" id="hm2d-desc">Average danger score (0–10). Row = attacker, Column = judge.</p>
+            <div class="heatmap-wrap" id="hm2d-container"></div>
+            <div class="legend" id="hm2d-legend"></div>
+        </div>
+    </div>
+
+    <!-- ==================== 3D HEATMAPS ==================== -->
+    <div class="panel panel-wide" id="tab-heatmaps-3d">
+        <div class="toggle-row" style="margin-bottom:8px">
+            <button class="toggle-btn active" onclick="switch3dView('danger')">3D Danger Score</button>
+            <button class="toggle-btn" onclick="switch3dView('safe')">3D Safe Refusal Rate</button>
+        </div>
+        <div class="card" id="card-3d-danger">
+            <h2>3D Danger Score Heatmap</h2>
+            <p class="desc">Interactive 3D scatter plot showing danger scores for every <em>(Red Team × Judge ×
+                    Target)</em> combination. Drag to rotate, scroll to zoom, hover for details.</p>
+            <div id="plot3d" style="width:100%;height:calc(100vh - 300px);min-height:500px;"></div>
+        </div>
+        <div class="card" id="card-3d-safe" style="display:none">
+            <h2>3D Safe Refusal Rate Heatmap</h2>
+            <p class="desc">Safe refusal rate for every <em>(Red Team × Judge × Target)</em> combination. Larger,
+                greener spheres = more robust.</p>
+            <div id="plot3d-safe" style="width:100%;height:calc(100vh - 300px);min-height:500px;"></div>
+        </div>
+    </div>
+
+    <!-- ==================== RANKINGS ==================== -->
+    <div class="panel" id="tab-rankings">
+        <!-- Relationship sub-tabs -->
+        <div class="toggle-row" style="margin-bottom:8px">
+            <button class="toggle-btn active" onclick="switchRankRelationship('rt-judge')">Red Team – Judge</button>
+            <button class="toggle-btn" onclick="switchRankRelationship('target-rt')">Target – Red Team</button>
+            <button class="toggle-btn" onclick="switchRankRelationship('target-judge')">Target – Judge</button>
+        </div>
+        <!-- Red Team – Judge rankings -->
+        <div id="rank-view-rt-judge">
+            <div class="grid-2">
+                <div class="card">
+                    <h2>Most Dangerous Red-Team Models</h2>
+                    <p class="desc">Avg danger score when this model attacks (across all judges)</p>
+                    <table class="rank-table" id="rank-attacker"></table>
+                </div>
+                <div class="card">
+                    <h2>Strictest Judge Models</h2>
+                    <p class="desc">Avg danger score assigned when judging (lower = stricter)</p>
+                    <table class="rank-table" id="rank-judge"></table>
+                </div>
+            </div>
+            <div class="card">
+                <h2>All Red Team – Judge Pairings</h2>
+                <p class="desc">All 90 red-team / judge combinations sorted by danger</p>
+                <table class="rank-table" id="rank-all"></table>
+            </div>
+        </div>
+        <!-- Target – Red Team rankings -->
+        <div id="rank-view-target-rt" style="display:none">
+            <div class="grid-2">
+                <div class="card">
+                    <h2>Most Vulnerable Target Models</h2>
+                    <p class="desc">Avg danger score when this model is targeted (across all red teams)</p>
+                    <table class="rank-table" id="rank-target-vuln-rt"></table>
+                </div>
+                <div class="card">
+                    <h2>Most Effective Red Teams (by Target)</h2>
+                    <p class="desc">Avg danger score when this red team attacks (across all targets)</p>
+                    <table class="rank-table" id="rank-rt-effectiveness"></table>
+                </div>
+            </div>
+            <div class="card">
+                <h2>All Target – Red Team Combinations</h2>
+                <p class="desc">Every target × red team pair sorted by danger</p>
+                <table class="rank-table" id="rank-target-redteam"></table>
+            </div>
+        </div>
+        <!-- Target – Judge rankings -->
+        <div id="rank-view-target-judge" style="display:none">
+            <div class="grid-2">
+                <div class="card">
+                    <h2>Most Vulnerable Target Models</h2>
+                    <p class="desc">Avg danger score when this model is targeted (across all judges)</p>
+                    <table class="rank-table" id="rank-target-vuln-judge"></table>
+                </div>
+                <div class="card">
+                    <h2>Strictest Judges (by Target)</h2>
+                    <p class="desc">Avg danger score assigned when judging (across all targets)</p>
+                    <table class="rank-table" id="rank-judge-strictness"></table>
+                </div>
+            </div>
+            <div class="card">
+                <h2>All Target – Judge Combinations</h2>
+                <p class="desc">Every target × judge pair sorted by danger</p>
+                <table class="rank-table" id="rank-target-judge"></table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let DATA, MODELS;
+        const lookup = {};
+        let cur2dRel = 'rt-judge', cur2dMetric = 'danger';
+
+        // ===== COLOR UTILITIES =====
+        function multiStopColor(t, stops) {
+            const n = stops.length - 1;
+            const i = Math.min(Math.floor(t * n), n - 1);
+            const f = (t * n) - i;
+            const [h0, s0, l0] = stops[i], [h1, s1, l1] = stops[i + 1];
+            return `hsl(${+(h0 + (h1 - h0) * f).toFixed(1)},${+(s0 + (s1 - s0) * f).toFixed(1)}%,${+(l0 + (l1 - l0) * f).toFixed(1)}%)`;
+        }
+        const GOOD_TO_BAD = [[145, 80, 22], [122, 75, 32], [75, 82, 38], [48, 90, 42], [28, 90, 44], [8, 88, 42], [0, 80, 36], [345, 72, 28]];
+        const BAD_TO_GOOD = [...GOOD_TO_BAD].reverse();
+        function dangerColor(val) { return val === null ? null : multiStopColor(Math.min(val / 10, 1), GOOD_TO_BAD); }
+        function ratioColor(val, metric) {
+            const t = Math.min(Math.max(val, 0), 1);
+            return metric === 'safe' ? multiStopColor(t, BAD_TO_GOOD) : multiStopColor(t, GOOD_TO_BAD);
+        }
+        function getTotal(l) { return (l.safe_refusal || 0) + (l.partial_compliance || 0) + (l.policy_violation || 0); }
+        function getRatio(l, m) {
+            const t = getTotal(l); if (!t) return 0;
+            if (m === 'violation') return (l.policy_violation || 0) / t;
+            if (m === 'partial') return (l.partial_compliance || 0) / t;
+            return (l.safe_refusal || 0) / t;
+        }
+        function pct(v) { return (v * 100).toFixed(1) + '%'; }
+
+        // ===== STATS BAR =====
+        function buildStats() {
+            const active = DATA.pairings.filter(p => p.overall_avg_danger_score > 0);
+            const avgScore = active.reduce((a, b) => a + b.overall_avg_danger_score, 0) / active.length;
+            const maxP = DATA.pairings.reduce((a, b) => a.overall_avg_danger_score > b.overall_avg_danger_score ? a : b);
+            let tv = 0, ta = 0;
+            DATA.pairings.forEach(p => { tv += p.overall_labels.policy_violation || 0; ta += getTotal(p.overall_labels); });
+            document.getElementById('stats-bar').innerHTML = [
+                { label: 'Total Pairings', value: DATA.total_pairings, sub: `${MODELS.length} models` },
+                { label: 'Total Interactions', value: ta.toLocaleString(), sub: '30 rounds/pairing' },
+                { label: 'Avg Danger Score', value: avgScore.toFixed(2), sub: 'across active pairings' },
+                { label: 'Overall Violation Rate', value: pct(tv / ta), sub: `${tv.toLocaleString()} violations` },
+                { label: 'Peak Score', value: maxP.overall_avg_danger_score.toFixed(2), sub: `${maxP.red_team_model} → ${maxP.judge_model}` },
+            ].map(c => `<div class="stat-card"><div class="label">${c.label}</div><div class="value">${c.value}</div><div class="sub">${c.sub}</div></div>`).join('');
+        }
+
+        // ===== TOOLTIP =====
+        const tt = document.getElementById('tooltip');
+        function moveTooltip(e) {
+            tt.style.left = Math.min(e.clientX + 16, window.innerWidth - 280) + 'px';
+            tt.style.top = Math.max(e.clientY - 20, 10) + 'px';
+        }
+        function hideTooltip() { tt.style.display = 'none'; }
+        function showPairingTooltip(e, key) {
+            const p = lookup[key]; if (!p) return;
+            const l = p.overall_labels, t = getTotal(l);
+            tt.innerHTML = `<div class="tt-title">${p.red_team_model} → ${p.judge_model}</div>
+                <div class="tt-row"><span>Avg Danger Score</span><span>${p.overall_avg_danger_score.toFixed(3)}</span></div>
+                <div class="tt-row"><span>Total Responses</span><span>${t}</span></div>
+                <div class="tt-row"><span><span class="tt-badge" style="background:rgba(0,212,170,0.2);color:#00d4aa">Safe</span></span><span>${l.safe_refusal || 0} (${pct((l.safe_refusal || 0) / t)})</span></div>
+                <div class="tt-row"><span><span class="tt-badge" style="background:rgba(255,180,0,0.2);color:#ffb400">Partial</span></span><span>${l.partial_compliance || 0} (${pct((l.partial_compliance || 0) / t)})</span></div>
+                <div class="tt-row"><span><span class="tt-badge" style="background:rgba(255,75,75,0.2);color:#ff4b4b">Violation</span></span><span>${l.policy_violation || 0} (${pct((l.policy_violation || 0) / t)})</span></div>`;
+            tt.style.display = 'block'; moveTooltip(e);
+        }
+        function showAxisTooltip(e, row, col, data) {
+            if (!data || !data[row] || !data[row][col]) return;
+            const stats = data[row][col], l = stats.labels, t = stats.total_tests;
+            tt.innerHTML = `<div class="tt-title">${row} × ${col}</div>
+                <div class="tt-row"><span>Avg Danger</span><span>${stats.avg_danger_score.toFixed(3)}</span></div>
+                <div class="tt-row"><span>Tests</span><span>${t}</span></div>
+                <div class="tt-row"><span><span class="tt-badge" style="background:rgba(0,212,170,0.2);color:#00d4aa">Safe</span></span><span>${l.safe_refusal || 0} (${pct((l.safe_refusal || 0) / t)})</span></div>
+                <div class="tt-row"><span><span class="tt-badge" style="background:rgba(255,180,0,0.2);color:#ffb400">Partial</span></span><span>${l.partial_compliance || 0} (${pct((l.partial_compliance || 0) / t)})</span></div>
+                <div class="tt-row"><span><span class="tt-badge" style="background:rgba(255,75,75,0.2);color:#ff4b4b">Violation</span></span><span>${l.policy_violation || 0} (${pct((l.policy_violation || 0) / t)})</span></div>`;
+            tt.style.display = 'block'; moveTooltip(e);
+        }
+
+        // ===== MAIN TAB SWITCHING =====
+        function switchMainTab(id) {
+            document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('tab-' + id).classList.add('active');
+            setTimeout(() => {
+                const plotEl = document.getElementById('tab-' + id).querySelector('[id^="plot3d"]');
+                if (plotEl && plotEl.data) Plotly.Plots.resize(plotEl);
+            }, 50);
+        }
+
+        // ===== 2D HEATMAP TAB =====
+        function switch2dRelationship(rel) {
+            cur2dRel = rel;
+            const btns = document.querySelector('#tab-heatmaps-2d').querySelectorAll('.toggle-row:first-child .toggle-btn');
+            btns.forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            render2dHeatmap();
+        }
+
+        document.getElementById('metric-toggle').addEventListener('click', e => {
+            const btn = e.target.closest('.toggle-btn'); if (!btn) return;
+            cur2dMetric = btn.dataset.metric;
+            document.querySelectorAll('#metric-toggle .toggle-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            render2dHeatmap();
+        });
+
+        function render2dHeatmap() {
+            const container = document.getElementById('hm2d-container');
+            const legend = document.getElementById('hm2d-legend');
+            const titleEl = document.getElementById('hm2d-title');
+            const descEl = document.getElementById('hm2d-desc');
+
+            const relNames = { 'rt-judge': 'Red Team – Judge', 'target-rt': 'Target – Red Team', 'target-judge': 'Target – Judge' };
+            const metricNames = { danger: 'Danger Score', violation: 'Violation Rate', partial: 'Partial Rate', safe: 'Safe Refusal Rate' };
+            titleEl.textContent = `${relNames[cur2dRel]}: ${metricNames[cur2dMetric]}`;
+
+            if (cur2dRel === 'rt-judge') {
+                renderRtJudgeHeatmap(container, legend, descEl);
+            } else {
+                const data = cur2dRel === 'target-rt' ? DATA.target_model_vs_red_team : DATA.target_model_vs_judge;
+                const rowLabel = 'TARGET';
+                const colLabel = cur2dRel === 'target-rt' ? 'RED TEAM' : 'JUDGE';
+                renderAxisHeatmap(container, legend, descEl, data, rowLabel, colLabel);
+            }
+        }
+
+        function renderRtJudgeHeatmap(container, legend, descEl) {
+            const isDanger = cur2dMetric === 'danger';
+            if (isDanger) descEl.textContent = 'Average danger score (0–10). Row = attacker, Column = judge.';
+            else descEl.innerHTML = `Ratio of <strong>${cur2dMetric === 'violation' ? 'policy_violation' : cur2dMetric === 'partial' ? 'partial_compliance' : 'safe_refusal'}</strong> responses.`;
+
+            let html = `<table class="heatmap-table"><thead><tr><th></th><th style="font-size:0.78rem;writing-mode:initial;transform:none;color:#6c63ff;padding-bottom:8px;text-align:left" colspan="${MODELS.length}">← JUDGE MODEL</th></tr><tr><th class="row-label" style="color:#a78bfa;font-size:0.72rem">RED TEAM ↓</th>`;
+            MODELS.forEach(m => { html += `<th class="axis-label">${m}</th>`; });
+            html += '</tr></thead><tbody>';
+            MODELS.forEach(rm => {
+                html += `<tr><td class="row-label">${rm}</td>`;
+                MODELS.forEach(jm => {
+                    if (rm === jm) { html += `<td><div class="hm-cell empty"></div></td>`; return; }
+                    const p = lookup[`${rm}|${jm}`];
+                    if (!p) { html += `<td><div class="hm-cell empty"></div></td>`; return; }
+                    let val, color, display;
+                    if (isDanger) {
+                        val = p.overall_avg_danger_score; color = dangerColor(val);
+                        display = `<span class="cell-val">${val.toFixed(2)}</span><span class="cell-sub">/10</span>`;
+                    } else {
+                        val = getRatio(p.overall_labels, cur2dMetric); color = ratioColor(val, cur2dMetric);
+                        display = `<span class="cell-val">${pct(val)}</span>`;
+                    }
+                    html += `<td><div class="hm-cell" style="background:${color}" onmouseenter="showPairingTooltip(event,'${rm}|${jm}')" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${display}</div></td>`;
+                });
+                html += '</tr>';
+            });
+            container.innerHTML = html + '</tbody></table>';
+            buildLegend(legend, isDanger);
+        }
+
+        function renderAxisHeatmap(container, legend, descEl, data, rowLabel, colLabel) {
+            if (!data) { container.innerHTML = '<p style="color:var(--text-muted)">No data available. Run generate_enhanced_summary.py first.</p>'; return; }
+            const isDanger = cur2dMetric === 'danger';
+            if (isDanger) descEl.textContent = `Average danger score (0–10). Row = ${rowLabel.toLowerCase()}, Column = ${colLabel.toLowerCase()}.`;
+            else descEl.innerHTML = `Ratio of <strong>${cur2dMetric === 'violation' ? 'policy_violation' : cur2dMetric === 'partial' ? 'partial_compliance' : 'safe_refusal'}</strong> responses.`;
+
+            let html = `<table class="heatmap-table"><thead><tr><th></th><th style="font-size:0.78rem;writing-mode:initial;transform:none;color:#6c63ff;padding-bottom:8px;text-align:left" colspan="${MODELS.length}">← ${colLabel} MODEL</th></tr><tr><th class="row-label" style="color:#a78bfa;font-size:0.72rem">${rowLabel} ↓</th>`;
+            MODELS.forEach(m => { html += `<th class="axis-label">${m}</th>`; });
+            html += '</tr></thead><tbody>';
+            MODELS.forEach(rowM => {
+                html += `<tr><td class="row-label">${rowM}</td>`;
+                MODELS.forEach(colM => {
+                    if (!data[rowM] || !data[rowM][colM]) { html += `<td><div class="hm-cell empty"></div></td>`; return; }
+                    const stats = data[rowM][colM];
+                    let val, color, display;
+                    if (isDanger) {
+                        val = stats.avg_danger_score; color = dangerColor(val);
+                        display = `<span class="cell-val">${val.toFixed(2)}</span><span class="cell-sub">/10</span>`;
+                    } else {
+                        const l = stats.labels || {};
+                        const t = stats.total_tests || 1;
+                        if (cur2dMetric === 'violation') val = (l.policy_violation || 0) / t;
+                        else if (cur2dMetric === 'partial') val = (l.partial_compliance || 0) / t;
+                        else val = (l.safe_refusal || 0) / t;
+                        color = ratioColor(val, cur2dMetric);
+                        display = `<span class="cell-val">${pct(val)}</span>`;
+                    }
+                    const safeRow = rowM.replace(/['"]/g, ''), safeCol = colM.replace(/['"]/g, '');
+                    const dataRef = cur2dRel === 'target-rt' ? 'DATA.target_model_vs_red_team' : 'DATA.target_model_vs_judge';
+                    html += `<td><div class="hm-cell" style="background:${color}" onmouseenter="showAxisTooltip(event,'${safeRow}','${safeCol}',${dataRef})" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${display}</div></td>`;
+                });
+                html += '</tr>';
+            });
+            container.innerHTML = html + '</tbody></table>';
+            buildLegend(legend, isDanger);
+        }
+
+        function buildLegend(legend, isDanger) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 200; canvas.height = 14; canvas.style.borderRadius = '6px';
+            const ctx = canvas.getContext('2d'), g = ctx.createLinearGradient(0, 0, 200, 0);
+            if (isDanger) {
+                for (let i = 0; i <= 10; i++) g.addColorStop(i / 10, dangerColor(i));
+                ctx.fillStyle = g; ctx.fillRect(0, 0, 200, 14);
+                legend.innerHTML = '<span class="legend-label">0 — Low</span>';
+                legend.appendChild(canvas);
+                legend.innerHTML += '<span class="legend-label">10 — High</span>';
+            } else {
+                for (let i = 0; i <= 20; i++) g.addColorStop(i / 20, ratioColor(i / 20, cur2dMetric));
+                ctx.fillStyle = g; ctx.fillRect(0, 0, 200, 14);
+                legend.innerHTML = '<span class="legend-label">0%</span>';
+                legend.appendChild(canvas);
+                legend.innerHTML += '<span class="legend-label">100%</span>';
+            }
+        }
+
+        // ===== 3D VIEW SWITCHING =====
+        function switch3dView(view) {
+            const btns = document.querySelector('#tab-heatmaps-3d').querySelectorAll('.toggle-btn');
+            btns.forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('card-3d-danger').style.display = view === 'danger' ? '' : 'none';
+            document.getElementById('card-3d-safe').style.display = view === 'safe' ? '' : 'none';
+            const plotId = view === 'danger' ? 'plot3d' : 'plot3d-safe';
+            setTimeout(() => { const el = document.getElementById(plotId); if (el && el.data) Plotly.Plots.resize(el); }, 50);
+        }
+
+        // ===== 3D HEATMAPS =====
+        function build3DPlot(containerId, getColor, getSize, colorbarTitle, cmin, cmax, colorscale, ticksuffix) {
+            const triples = DATA.triple_data;
+            if (!triples || !triples.length) return;
+            const modelIdx = {}; MODELS.forEach((m, i) => { modelIdx[m] = i; });
+            const x = [], y = [], z = [], colors = [], sizes = [], hoverTexts = [];
+            triples.forEach(d => {
+                const xi = modelIdx[d.red_team], yi = modelIdx[d.judge], zi = modelIdx[d.target];
+                if (xi === undefined || yi === undefined || zi === undefined) return;
+                const l = d.labels || {}, t = d.total_tests;
+                const sr = l.safe_refusal || 0, pc = l.partial_compliance || 0, pv = l.policy_violation || 0;
+                const cv = getColor(d, sr, pc, pv, t), sv = getSize(d, sr, pc, pv, t);
+                x.push(xi); y.push(yi); z.push(zi); colors.push(cv); sizes.push(sv);
+                hoverTexts.push(`<b>Red Team:</b> ${d.red_team}<br><b>Judge:</b> ${d.judge}<br><b>Target:</b> ${d.target}<br><b>Avg Danger:</b> ${d.avg_danger_score.toFixed(3)}<br><b>Tests:</b> ${t}<br><b>Safe:</b> ${sr} (${t ? ((sr / t) * 100).toFixed(1) : 0}%)<br><b>Partial:</b> ${pc} (${t ? ((pc / t) * 100).toFixed(1) : 0}%)<br><b>Violation:</b> ${pv} (${t ? ((pv / t) * 100).toFixed(1) : 0}%)`);
+            });
+            const mkAxis = (title, color) => ({
+                title: { text: title, font: { color, size: 13 } },
+                tickvals: MODELS.map((_, i) => i), ticktext: MODELS,
+                tickfont: { color: '#8b90b0', size: 10 }, gridcolor: '#2e3352', backgroundcolor: '#1a1d27', showbackground: true
+            });
+            Plotly.newPlot(containerId, [{
+                x, y, z, mode: 'markers', type: 'scatter3d',
+                marker: {
+                    size: sizes, color: colors, colorscale, cmin, cmax,
+                    colorbar: { title: { text: colorbarTitle, font: { color: '#e8eaf6', size: 12 } }, tickfont: { color: '#8b90b0' }, ticksuffix: ticksuffix || '', bgcolor: 'rgba(26,29,39,0.8)', bordercolor: '#2e3352', len: 0.6 },
+                    opacity: 0.85, line: { width: 0.5, color: 'rgba(255,255,255,0.15)' }
+                }, text: hoverTexts, hoverinfo: 'text',
+                hoverlabel: { bgcolor: '#1e2236', bordercolor: '#2e3352', font: { family: 'Segoe UI, system-ui, sans-serif', size: 12, color: '#e8eaf6' } }
+            }], {
+                scene: { xaxis: mkAxis('Red Team', '#a78bfa'), yaxis: mkAxis('Judge', '#6c63ff'), zaxis: mkAxis('Target', '#00d4aa'), camera: { eye: { x: 1.8, y: 1.8, z: 1.2 } } },
+                paper_bgcolor: '#1a1d27', plot_bgcolor: '#1a1d27', margin: { l: 10, r: 10, t: 30, b: 10 },
+                font: { family: 'Segoe UI, system-ui, sans-serif', color: '#e8eaf6' }
+            }, { responsive: true, displayModeBar: true, modeBarButtonsToRemove: ['toImage'], displaylogo: false });
+        }
+
+        function build3DHeatmap() {
+            const cs = [[0, 'hsl(145,80%,22%)'], [0.2, 'hsl(122,75%,32%)'], [0.4, 'hsl(75,82%,38%)'], [0.55, 'hsl(48,90%,42%)'], [0.7, 'hsl(28,90%,44%)'], [0.85, 'hsl(8,88%,42%)'], [0.93, 'hsl(0,80%,36%)'], [1, 'hsl(345,72%,28%)']];
+            build3DPlot('plot3d', d => d.avg_danger_score, d => Math.max(4, d.avg_danger_score * 1.8), 'Danger Score', 0, 10, cs);
+        }
+        function build3DSafeRefusalHeatmap() {
+            const cs = [[0, 'hsl(345,72%,28%)'], [0.07, 'hsl(0,80%,36%)'], [0.15, 'hsl(8,88%,42%)'], [0.3, 'hsl(28,90%,44%)'], [0.45, 'hsl(48,90%,42%)'], [0.6, 'hsl(75,82%,38%)'], [0.8, 'hsl(122,75%,32%)'], [1, 'hsl(145,80%,22%)']];
+            build3DPlot('plot3d-safe', (d, sr, pc, pv, t) => t > 0 ? (sr / t) * 100 : 0, (d, sr, pc, pv, t) => Math.max(4, (t > 0 ? (sr / t) * 100 : 0) * 0.16), 'Safe Refusal %', 0, 100, cs, '%');
+        }
+
+        // ===== RANKINGS TAB =====
+        function switchRankRelationship(rel) {
+            const btns = document.querySelector('#tab-rankings').querySelectorAll('.toggle-row .toggle-btn');
+            btns.forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            ['rt-judge', 'target-rt', 'target-judge'].forEach(r => {
+                document.getElementById('rank-view-' + r).style.display = r === rel ? '' : 'none';
+            });
+        }
+
+        function buildModelRankTable(tableId, modelScores, sortDesc = true) {
+            const ranks = Object.entries(modelScores).map(([m, s]) => ({ model: m, avg: s.reduce((a, b) => a + b, 0) / s.length }));
+            ranks.sort((a, b) => sortDesc ? b.avg - a.avg : a.avg - b.avg);
+            const maxV = Math.max(...ranks.map(r => r.avg));
+            document.getElementById(tableId).innerHTML = `<thead><tr><th>#</th><th>Model</th><th>Avg Score</th><th>Bar</th></tr></thead><tbody>` +
+                ranks.map((r, i) => `<tr><td style="color:var(--text-muted)">${i + 1}</td><td><strong>${r.model}</strong></td>
+                    <td style="color:${i < 3 ? (sortDesc ? '#ff6b6b' : '#00d4aa') : 'var(--text)'}">${r.avg.toFixed(3)}</td>
+                    <td><div class="bar-bg"><div class="bar-fill" style="width:${(r.avg / maxV) * 100}%;background:${dangerColor(r.avg)}"></div></div></td></tr>`).join('') + `</tbody>`;
+        }
+
+        function buildFullTable(tableId, rows, col1Label, col2Label) {
+            rows.sort((a, b) => b.avg - a.avg);
+            const maxS = rows.length ? rows[0].avg : 1;
+            document.getElementById(tableId).innerHTML = `<thead><tr><th>#</th><th>${col1Label}</th><th>${col2Label}</th><th>Avg Danger</th><th>Violation %</th><th>Partial %</th><th>Safe %</th></tr></thead><tbody>` +
+                rows.map((r, i) => {
+                    const t = r.total || 1;
+                    return `<tr><td style="color:var(--text-muted);font-size:0.8rem">${i + 1}</td>
+                        <td><strong>${r.row}</strong></td><td>${r.col}</td>
+                        <td><div style="display:flex;align-items:center;gap:8px">
+                            <div class="bar-bg" style="min-width:55px"><div class="bar-fill" style="width:${(r.avg / maxS) * 100}%;background:${dangerColor(r.avg)}"></div></div>
+                            <span style="font-weight:600;color:${dangerColor(r.avg)}">${r.avg.toFixed(2)}</span></div></td>
+                        <td><span class="badge badge-violation">${pct(r.pv / t)}</span></td>
+                        <td><span class="badge badge-partial">${pct(r.pc / t)}</span></td>
+                        <td><span class="badge badge-safe">${pct(r.sr / t)}</span></td></tr>`;
+                }).join('') + `</tbody>`;
+        }
+
+        function flattenAxisData(data) {
+            const rows = [];
+            for (const [rowM, cols] of Object.entries(data || {})) {
+                for (const [colM, stats] of Object.entries(cols)) {
+                    const l = stats.labels || {};
+                    rows.push({ row: rowM, col: colM, avg: stats.avg_danger_score, total: stats.total_tests, sr: l.safe_refusal || 0, pc: l.partial_compliance || 0, pv: l.policy_violation || 0 });
+                }
+            }
+            return rows;
+        }
+
+        function buildAllRankings() {
+            // RT – Judge
+            const aMap = {}, jMap = {};
+            DATA.pairings.forEach(p => {
+                if (!aMap[p.red_team_model]) aMap[p.red_team_model] = [];
+                aMap[p.red_team_model].push(p.overall_avg_danger_score);
+                if (!jMap[p.judge_model]) jMap[p.judge_model] = [];
+                jMap[p.judge_model].push(p.overall_avg_danger_score);
+            });
+            buildModelRankTable('rank-attacker', aMap, true);
+            buildModelRankTable('rank-judge', jMap, false);
+
+            const rtjRows = DATA.pairings.map(p => {
+                const l = p.overall_labels, t = getTotal(l);
+                return { row: p.red_team_model, col: p.judge_model, avg: p.overall_avg_danger_score, total: t, sr: l.safe_refusal || 0, pc: l.partial_compliance || 0, pv: l.policy_violation || 0 };
+            });
+            buildFullTable('rank-all', rtjRows, 'Red Team', 'Judge');
+
+            // Target – Red Team
+            if (DATA.target_model_vs_red_team) {
+                const trtRows = flattenAxisData(DATA.target_model_vs_red_team);
+                const targetScoresRT = {}, rtScores = {};
+                trtRows.forEach(r => {
+                    if (!targetScoresRT[r.row]) targetScoresRT[r.row] = [];
+                    targetScoresRT[r.row].push(r.avg);
+                    if (!rtScores[r.col]) rtScores[r.col] = [];
+                    rtScores[r.col].push(r.avg);
+                });
+                buildModelRankTable('rank-target-vuln-rt', targetScoresRT, true);
+                buildModelRankTable('rank-rt-effectiveness', rtScores, true);
+                buildFullTable('rank-target-redteam', trtRows, 'Target', 'Red Team');
+            }
+
+            // Target – Judge
+            if (DATA.target_model_vs_judge) {
+                const tjRows = flattenAxisData(DATA.target_model_vs_judge);
+                const targetScoresJ = {}, judgeScores = {};
+                tjRows.forEach(r => {
+                    if (!targetScoresJ[r.row]) targetScoresJ[r.row] = [];
+                    targetScoresJ[r.row].push(r.avg);
+                    if (!judgeScores[r.col]) judgeScores[r.col] = [];
+                    judgeScores[r.col].push(r.avg);
+                });
+                buildModelRankTable('rank-target-vuln-judge', targetScoresJ, true);
+                buildModelRankTable('rank-judge-strictness', judgeScores, false);
+                buildFullTable('rank-target-judge', tjRows, 'Target', 'Judge');
+            }
+        }
+
+        // ===== LOADING =====
+        function showLoading() {
+            document.getElementById('stats-bar').innerHTML = '<div style="color:var(--text-muted);font-size:0.9rem;padding:14px 0">Loading master_summary.json…</div>';
+        }
+        function showError(msg) {
+            document.getElementById('stats-bar').innerHTML = `<div style="background:rgba(255,75,75,0.1);border:1px solid rgba(255,75,75,0.3);border-radius:10px;padding:14px 20px;color:#ff6b6b;font-size:0.88rem">
+                <strong>Failed to load master_summary.json</strong><br><span style="color:var(--text-muted)">${msg}</span></div>`;
+        }
+
+        async function init() {
+            showLoading();
+            try {
+                const res = await fetch('./master_summary.json');
+                if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+                DATA = await res.json();
+                MODELS = DATA.models_tested;
+                DATA.pairings.forEach(p => { lookup[`${p.red_team_model}|${p.judge_model}`] = p; });
+                buildStats();
+                render2dHeatmap();
+                build3DHeatmap();
+                build3DSafeRefusalHeatmap();
+                buildAllRankings();
+            } catch (err) {
+                showError(err.message);
+            }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

@@ -1,4 +1,0 @@
-c:\Users\tho01699\Desktop\qwen\analyze_categories.py
-c:\Users\tho01699\Desktop\qwen\categories_output.txt
-c:\Users\tho01699\Desktop\qwen\normalize_categories.py
-c:\Users\tho01699\Desktop\qwen\normalize_categories_v2.py
