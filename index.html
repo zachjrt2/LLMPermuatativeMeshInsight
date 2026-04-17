@@ -1476,14 +1476,14 @@
                 if (val === 'file:' + currentFilePath || (!val.startsWith('group:') && !val.startsWith('file:'))) {
                      // Single file case
                      const fname = val.startsWith('file:') ? val.replace('file:', '') : currentFilePath;
-                     const resp = await fetch(fname);
+                     const resp = await fetch('RawData/' + fname);
                      const txt = await resp.text();
                      combined = txt.trim().split('\n').filter(Boolean).map(l => JSON.parse(l));
                 } else if (val.startsWith('group:')) {
                      // Multiple files case
                      const files = filesForGroup(val);
                      for (let i = 0; i < files.length; i++) {
-                        const resp = await fetch(files[i]);
+                        const resp = await fetch('RawData/' + files[i]);
                         const txt = await resp.text();
                         const rows = txt.trim().split('\n').filter(Boolean).map(line => {
                             const r = JSON.parse(line);
