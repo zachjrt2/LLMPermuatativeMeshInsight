@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,13 +23,17 @@
             --glass: blur(20px);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background: var(--bg);
             color: var(--text-main);
-            background-image: 
+            background-image:
                 radial-gradient(circle at 5% 5%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
                 radial-gradient(circle at 95% 95%, rgba(139, 92, 246, 0.08) 0%, transparent 40%);
             min-height: 100vh;
@@ -98,7 +103,11 @@
             -webkit-text-fill-color: transparent;
         }
 
-        .subtitle { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+        .subtitle {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
 
         .section-header {
             margin: 40px 0 20px;
@@ -107,8 +116,16 @@
             gap: 12px;
         }
 
-        .section-header h2 { font-size: 20px; color: var(--text-main); }
-        .section-header .line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+        .section-header h2 {
+            font-size: 20px;
+            color: var(--text-main);
+        }
+
+        .section-header .line {
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, var(--border), transparent);
+        }
 
         /* Dual Matrix Layout */
         .matrix-grid {
@@ -123,7 +140,7 @@
             border: 1px solid var(--border);
             border-radius: 24px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
 
         .chart-card h3 {
@@ -145,8 +162,17 @@
             justify-content: center;
         }
 
-        .legend-item { display: flex; align-items: center; gap: 6px; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
 
         /* Archetype Grid */
         .archetype-grid {
@@ -164,12 +190,37 @@
             transition: all 0.3s ease;
         }
 
-        .archetype-card:hover { transform: translateY(-3px); background: var(--surface-hover); }
-        .archetype-pattern { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-        .archetype-desc { font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 16px; }
-        
-        .tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
-        .mini-tag { font-size: 10px; padding: 3px 8px; background: rgba(255,255,255,0.05); border-radius: 4px; border: 1px solid var(--border); }
+        .archetype-card:hover {
+            transform: translateY(-3px);
+            background: var(--surface-hover);
+        }
+
+        .archetype-pattern {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .archetype-desc {
+            font-size: 13px;
+            color: var(--text-dim);
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .tag-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .mini-tag {
+            font-size: 10px;
+            padding: 3px 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
 
         /* Insight Wall */
         .insight-grid {
@@ -185,17 +236,62 @@
             padding: 24px;
         }
 
-        .insight-card h4 { font-size: 16px; margin-bottom: 16px; display: flex; justify-content: space-between; }
-        .keyword-wall { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
-        .wall-tag { font-size: 12px; padding: 6px 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; }
+        .insight-card h4 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+        }
 
-        .example-list { display: flex; flex-direction: column; gap: 10px; }
-        .example-item { padding: 10px; background: rgba(0,0,0,0.2); border-radius: 10px; font-size: 12px; color: var(--text-dim); }
+        .keyword-wall {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
 
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate { animation: slideIn 0.5s ease forwards; }
+        .wall-tag {
+            font-size: 12px;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .example-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .example-item {
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate {
+            animation: slideIn 0.5s ease forwards;
+        }
     </style>
 </head>
+
 <body>
     <header class="global-header">
         <div class="header-content">
@@ -208,12 +304,13 @@
                 <a href="phrase_intel.html" class="nav-link active">Phrase Intel</a>
                 <a href="flow.html" class="nav-link">Flow Graph</a>
                 <a href="heatmapdashboard.html" class="nav-link">Heatmaps</a>
+                <a href="dashboard_final.html" class="nav-link">Adversarial Phrases</a>
             </nav>
         </div>
     </header>
 
     <div class="container">
-        
+
         <!-- Dual Matrices -->
         <div class="matrix-grid">
             <!-- Matrix 1: Volatility vs Danger (Original) -->
@@ -224,8 +321,10 @@
                 </div>
                 <div class="matrix-legend">
                     <div class="legend-item"><span class="dot" style="background:var(--safe)"></span> Low Danger</div>
-                    <div class="legend-item"><span class="dot" style="background:var(--warn)"></span> High Volatility</div>
-                    <div class="legend-item"><span class="dot" style="background:var(--danger)"></span> Consistently Dangerous</div>
+                    <div class="legend-item"><span class="dot" style="background:var(--warn)"></span> High Volatility
+                    </div>
+                    <div class="legend-item"><span class="dot" style="background:var(--danger)"></span> Consistently
+                        Dangerous</div>
                 </div>
             </div>
 
@@ -237,8 +336,10 @@
                 </div>
                 <div class="matrix-legend">
                     <div class="legend-item"><span class="dot" style="background:var(--safe)"></span> Safe Refusal</div>
-                    <div class="legend-item"><span class="dot" style="background:var(--partial)"></span> Partial Compliance</div>
-                    <div class="legend-item"><span class="dot" style="background:var(--danger)"></span> Policy Violation</div>
+                    <div class="legend-item"><span class="dot" style="background:var(--partial)"></span> Partial
+                        Compliance</div>
+                    <div class="legend-item"><span class="dot" style="background:var(--danger)"></span> Policy Violation
+                    </div>
                 </div>
             </div>
         </div>
@@ -251,23 +352,29 @@
         <div class="archetype-grid">
             <div class="archetype-card animate" style="animation-delay: 0.3s; border-left: 3px solid var(--danger);">
                 <div class="archetype-pattern">Technical Specificity</div>
-                <div class="archetype-desc">Highly detailed requests for code/mechanics that bypass general safety filters through precision.</div>
+                <div class="archetype-desc">Highly detailed requests for code/mechanics that bypass general safety
+                    filters through precision.</div>
                 <div class="tag-row">
-                    <span class="mini-tag">Detailed</span> <span class="mini-tag">Instructions</span> <span class="mini-tag">Malware</span>
+                    <span class="mini-tag">Detailed</span> <span class="mini-tag">Instructions</span> <span
+                        class="mini-tag">Malware</span>
                 </div>
             </div>
             <div class="archetype-card animate" style="animation-delay: 0.4s; border-left: 3px solid var(--partial);">
                 <div class="archetype-pattern">Hypothetical Shield</div>
-                <div class="archetype-desc">Exploiting theoretical framing to extract underlying logic without triggering direct refusal.</div>
+                <div class="archetype-desc">Exploiting theoretical framing to extract underlying logic without
+                    triggering direct refusal.</div>
                 <div class="tag-row">
-                    <span class="mini-tag">Scenario</span> <span class="mini-tag">Theoretical</span> <span class="mini-tag">Bypass</span>
+                    <span class="mini-tag">Scenario</span> <span class="mini-tag">Theoretical</span> <span
+                        class="mini-tag">Bypass</span>
                 </div>
             </div>
             <div class="archetype-card animate" style="animation-delay: 0.5s; border-left: 3px solid var(--safe);">
                 <div class="archetype-pattern">Infrastructure Threat</div>
-                <div class="archetype-desc">Direct mentions of public safety or critical infrastructure that trigger universal model-wide refusal.</div>
+                <div class="archetype-desc">Direct mentions of public safety or critical infrastructure that trigger
+                    universal model-wide refusal.</div>
                 <div class="tag-row">
-                    <span class="mini-tag">Emergency</span> <span class="mini-tag">Public Safety</span> <span class="mini-tag">Bomb</span>
+                    <span class="mini-tag">Emergency</span> <span class="mini-tag">Public Safety</span> <span
+                        class="mini-tag">Bomb</span>
                 </div>
             </div>
         </div>
@@ -299,7 +406,7 @@
     <script>
         Chart.defaults.color = '#94a3b8';
         Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
-        
+
         async function init() {
             try {
                 const resp = await fetch('phrase_intelligence.json');
@@ -385,4 +492,5 @@
         init();
     </script>
 </body>
+
 </html>
