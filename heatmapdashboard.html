@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Red Team Evaluation Dashboard</title>
+    <title>Red Team Evaluation Dashboard (Accessible)</title>
+    <link rel="stylesheet" href="ieee_style.css">
     <style>
         :root {
             --bg: #0a0c10;
@@ -13,10 +14,10 @@
             --border: rgba(255, 255, 255, 0.1);
             --text: #e2e8f0;
             --text-muted: #94a3b8;
-            --accent-primary: #00f2fe;
-            --accent-secondary: #4facfe;
-            --accent: #4facfe;
-            --accent2: #00f2fe;
+            --accent-primary: #56B4E9;
+            --accent-secondary: #0072B2;
+            --accent: #0072B2;
+            --accent2: #56B4E9;
         }
 
         * {
@@ -31,7 +32,7 @@
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             min-height: 100vh;
             padding-bottom: 32px;
-            background-image: 
+            background-image:
                 radial-gradient(circle at 10% 20%, rgba(79, 172, 254, 0.05) 0%, transparent 40%),
                 radial-gradient(circle at 90% 80%, rgba(0, 242, 254, 0.05) 0%, transparent 40%);
         }
@@ -50,7 +51,7 @@
         .header-content {
             display: grid;
             grid-template-columns: 1fr auto;
-            grid-template-areas: 
+            grid-template-areas:
                 "title controls"
                 "nav controls";
             gap: 12px;
@@ -59,7 +60,7 @@
             margin: 0 auto;
         }
 
-        .header-content > div:first-child {
+        .header-content>div:first-child {
             grid-area: title;
             display: flex;
             flex-direction: column;
@@ -403,17 +404,17 @@
 
         .badge-safe {
             background: rgba(0, 212, 170, 0.15);
-            color: #00d4aa;
+            color: #56B4E9;
         }
 
         .badge-partial {
             background: rgba(255, 180, 0, 0.15);
-            color: #ffb400;
+            color: #F0E442;
         }
 
         .badge-violation {
             background: rgba(255, 75, 75, 0.15);
-            color: #ff4b4b;
+            color: #D55E00;
         }
 
         .bar-bg {
@@ -602,7 +603,8 @@
                 </div>
                 <div class="card">
                     <h2>Permissive Judges (by Target)</h2>
-                    <p class="desc">Avg danger score assigned when judging (across all targets, lower = more Permissive)</p>
+                    <p class="desc">Avg danger score assigned when judging (across all targets, lower = more Permissive)
+                    </p>
                     <table class="rank-table" id="rank-judge-strictness"></table>
                 </div>
             </div>
@@ -627,7 +629,7 @@
             const [h0, s0, l0] = stops[i], [h1, s1, l1] = stops[i + 1];
             return `hsl(${+(h0 + (h1 - h0) * f).toFixed(1)},${+(s0 + (s1 - s0) * f).toFixed(1)}%,${+(l0 + (l1 - l0) * f).toFixed(1)}%)`;
         }
-        const GOOD_TO_BAD = [[145, 80, 22], [122, 75, 32], [75, 82, 38], [48, 90, 42], [28, 90, 44], [8, 88, 42], [0, 80, 36], [345, 72, 28]];
+        const GOOD_TO_BAD = [[203, 70, 35], [210, 60, 45], [220, 50, 55], [60, 80, 55], [45, 90, 50], [30, 95, 45], [15, 95, 40], [0, 95, 35]];
         const BAD_TO_GOOD = [...GOOD_TO_BAD].reverse();
         function dangerColor(val) { return val === null ? null : multiStopColor(Math.min(val / 10, 1), GOOD_TO_BAD); }
         function ratioColor(val, metric) {
@@ -672,9 +674,9 @@
             tt.innerHTML = `<div class="tt-title">${p.red_team_model} → ${p.judge_model}</div>
                 <div class="tt-row"><span>Avg Danger Score</span><span>${p.overall_avg_danger_score.toFixed(3)}</span></div>
                 <div class="tt-row"><span>Total Responses</span><span>${t}</span></div>
-                <div class="tt-row"><span><span class="tt-badge" style="background:rgba(0,212,170,0.2);color:#00d4aa">Safe</span></span><span>${l.safe_refusal || 0} (${pct((l.safe_refusal || 0) / t)})</span></div>
-                <div class="tt-row"><span><span class="tt-badge" style="background:rgba(255,180,0,0.2);color:#ffb400">Partial</span></span><span>${l.partial_compliance || 0} (${pct((l.partial_compliance || 0) / t)})</span></div>
-                <div class="tt-row"><span><span class="tt-badge" style="background:rgba(255,75,75,0.2);color:#ff4b4b">Violation</span></span><span>${l.policy_violation || 0} (${pct((l.policy_violation || 0) / t)})</span></div>`;
+                <div class="tt-row"><span><span class="tt-badge" style="background:rgba(0,212,170,0.2);color:#56B4E9">Safe</span></span><span>${l.safe_refusal || 0} (${pct((l.safe_refusal || 0) / t)})</span></div>
+                <div class="tt-row"><span><span class="tt-badge" style="background:rgba(255,180,0,0.2);color:#F0E442">Partial</span></span><span>${l.partial_compliance || 0} (${pct((l.partial_compliance || 0) / t)})</span></div>
+                <div class="tt-row"><span><span class="tt-badge" style="background:rgba(255,75,75,0.2);color:#D55E00">Violation</span></span><span>${l.policy_violation || 0} (${pct((l.policy_violation || 0) / t)})</span></div>`;
             tt.style.display = 'block'; moveTooltip(e);
         }
         function showAxisTooltip(e, row, col, data) {
@@ -683,9 +685,9 @@
             tt.innerHTML = `<div class="tt-title">${row} × ${col}</div>
                 <div class="tt-row"><span>Avg Danger</span><span>${stats.avg_danger_score.toFixed(3)}</span></div>
                 <div class="tt-row"><span>Tests</span><span>${t}</span></div>
-                <div class="tt-row"><span><span class="tt-badge" style="background:rgba(0,212,170,0.2);color:#00d4aa">Safe</span></span><span>${l.safe_refusal || 0} (${pct((l.safe_refusal || 0) / t)})</span></div>
-                <div class="tt-row"><span><span class="tt-badge" style="background:rgba(255,180,0,0.2);color:#ffb400">Partial</span></span><span>${l.partial_compliance || 0} (${pct((l.partial_compliance || 0) / t)})</span></div>
-                <div class="tt-row"><span><span class="tt-badge" style="background:rgba(255,75,75,0.2);color:#ff4b4b">Violation</span></span><span>${l.policy_violation || 0} (${pct((l.policy_violation || 0) / t)})</span></div>`;
+                <div class="tt-row"><span><span class="tt-badge" style="background:rgba(0,212,170,0.2);color:#56B4E9">Safe</span></span><span>${l.safe_refusal || 0} (${pct((l.safe_refusal || 0) / t)})</span></div>
+                <div class="tt-row"><span><span class="tt-badge" style="background:rgba(255,180,0,0.2);color:#F0E442">Partial</span></span><span>${l.partial_compliance || 0} (${pct((l.partial_compliance || 0) / t)})</span></div>
+                <div class="tt-row"><span><span class="tt-badge" style="background:rgba(255,75,75,0.2);color:#D55E00">Violation</span></span><span>${l.policy_violation || 0} (${pct((l.policy_violation || 0) / t)})</span></div>`;
             tt.style.display = 'block'; moveTooltip(e);
         }
 
@@ -752,15 +754,18 @@
                     if (rm === jm) { html += `<td><div class="hm-cell empty"></div></td>`; return; }
                     const p = lookup[`${rm}|${jm}`];
                     if (!p) { html += `<td><div class="hm-cell empty"></div></td>`; return; }
-                    let val, color, display;
+                    let val, color, display, symbol = "";
                     if (isDanger) {
                         val = p.overall_avg_danger_score; color = dangerColor(val);
-                        display = `<span class="cell-val">${val.toFixed(2)}</span><span class="cell-sub">/10</span>`;
+                        display = `<span class="cell-val">${val.toFixed(1)}</span>`;
+                        symbol = val > 6 ? "✗" : (val < 2.5 ? "✓" : "•");
                     } else {
                         val = getRatio(p.overall_labels, cur2dMetric); color = ratioColor(val, cur2dMetric);
                         display = `<span class="cell-val">${pct(val)}</span>`;
+                        const isSafeMetric = cur2dMetric === "safe";
+                        symbol = isSafeMetric ? (val > 0.9 ? "✓" : (val < 0.4 ? "✗" : "•")) : (val > 0.6 ? "✗" : (val < 0.1 ? "✓" : "•"));
                     }
-                    html += `<td><div class="hm-cell" style="background:${color}" onmouseenter="showPairingTooltip(event,'${rm}|${jm}')" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${display}</div></td>`;
+                    html += `<td><div class="hm-cell" style="background:${color}" onmouseenter="showPairingTooltip(event, '${rm}|${jm}')" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${display}<span class="cell-sub" style="font-size:12px; font-weight:800; opacity:0.8">${symbol}</span></div></td>`;
                 });
                 html += '</tr>';
             });
@@ -782,22 +787,25 @@
                 MODELS.forEach(colM => {
                     if (!data[rowM] || !data[rowM][colM]) { html += `<td><div class="hm-cell empty"></div></td>`; return; }
                     const stats = data[rowM][colM];
-                    let val, color, display;
+                    let val, color, display, symbol = "";
                     if (isDanger) {
                         val = stats.avg_danger_score; color = dangerColor(val);
-                        display = `<span class="cell-val">${val.toFixed(2)}</span><span class="cell-sub">/10</span>`;
+                        display = `<span class="cell-val">${val.toFixed(1)}</span>`;
+                        symbol = val > 6 ? "✗" : (val < 2.5 ? "✓" : "•");
                     } else {
                         const l = stats.labels || {};
                         const t = stats.total_tests || 1;
-                        if (cur2dMetric === 'violation') val = (l.policy_violation || 0) / t;
-                        else if (cur2dMetric === 'partial') val = (l.partial_compliance || 0) / t;
+                        if (cur2dMetric === "violation") val = (l.policy_violation || 0) / t;
+                        else if (cur2dMetric === "partial") val = (l.partial_compliance || 0) / t;
                         else val = (l.safe_refusal || 0) / t;
                         color = ratioColor(val, cur2dMetric);
                         display = `<span class="cell-val">${pct(val)}</span>`;
+                        const isSafeMetric = cur2dMetric === "safe";
+                        symbol = isSafeMetric ? (val > 0.9 ? "✓" : (val < 0.4 ? "✗" : "•")) : (val > 0.6 ? "✗" : (val < 0.1 ? "✓" : "•"));
                     }
-                    const safeRow = rowM.replace(/['"]/g, ''), safeCol = colM.replace(/['"]/g, '');
-                    const dataRef = cur2dRel === 'target-rt' ? 'DATA.target_model_vs_red_team' : 'DATA.target_model_vs_judge';
-                    html += `<td><div class="hm-cell" style="background:${color}" onmouseenter="showAxisTooltip(event,'${safeRow}','${safeCol}',${dataRef})" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${display}</div></td>`;
+                    const safeRow = rowM.replace(/['"]/g, ""), safeCol = colM.replace(/['"]/g, "");
+                    const dataRef = cur2dRel === "target-rt" ? "DATA.target_model_vs_red_team" : "DATA.target_model_vs_judge";
+                    html += `<td><div class="hm-cell" style="background:${color}" onmouseenter="showAxisTooltip(event, '${safeRow}', '${safeCol}', ${dataRef})" onmousemove="moveTooltip(event)" onmouseleave="hideTooltip()">${display}<span class="cell-sub" style="font-size:12px; font-weight:800; opacity:0.8">${symbol}</span></div></td>`;
                 });
                 html += '</tr>';
             });
@@ -864,7 +872,7 @@
                 }, text: hoverTexts, hoverinfo: 'text',
                 hoverlabel: { bgcolor: '#1e2236', bordercolor: '#2e3352', font: { family: 'Segoe UI, system-ui, sans-serif', size: 12, color: '#e8eaf6' } }
             }], {
-                scene: { xaxis: mkAxis('Red Team', '#a78bfa'), yaxis: mkAxis('Judge', '#6c63ff'), zaxis: mkAxis('Target', '#00d4aa'), camera: { eye: { x: 1.8, y: 1.8, z: 1.2 } } },
+                scene: { xaxis: mkAxis('Red Team', '#a78bfa'), yaxis: mkAxis('Judge', '#6c63ff'), zaxis: mkAxis('Target', '#56B4E9'), camera: { eye: { x: 1.8, y: 1.8, z: 1.2 } } },
                 paper_bgcolor: '#1a1d27', plot_bgcolor: '#1a1d27', margin: { l: 10, r: 10, t: 30, b: 10 },
                 font: { family: 'Segoe UI, system-ui, sans-serif', color: '#e8eaf6' }
             }, { responsive: true, displayModeBar: true, modeBarButtonsToRemove: ['toImage'], displaylogo: false });
@@ -895,7 +903,7 @@
             const maxV = Math.max(...ranks.map(r => r.avg));
             document.getElementById(tableId).innerHTML = `<thead><tr><th>#</th><th>Model</th><th>Avg Score</th><th>Bar</th></tr></thead><tbody>` +
                 ranks.map((r, i) => `<tr><td style="color:var(--text-muted)">${i + 1}</td><td><strong>${r.model}</strong></td>
-                    <td style="color:${i < 3 ? (sortDesc ? '#ff6b6b' : '#00d4aa') : 'var(--text)'}">${r.avg.toFixed(3)}</td>
+                    <td style="color:${i < 3 ? (sortDesc ? '#ff6b6b' : '#56B4E9') : 'var(--text)'}">${r.avg.toFixed(3)}</td>
                     <td><div class="bar-bg"><div class="bar-fill" style="width:${(r.avg / maxV) * 100}%;background:${dangerColor(r.avg)}"></div></div></td></tr>`).join('') + `</tbody>`;
         }
 
@@ -1004,7 +1012,10 @@
         }
 
         init();
+        // Trigger initial
+        switchMainTab('heatmaps-2d');
     </script>
+    <script src="ieee_toggle.js"></script>
 </body>
 
 </html>

@@ -9,15 +9,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="ieee_style.css">
     <style>
         :root {
             --bg: #0a0c10;
             --surface: rgba(20, 24, 33, 0.7);
             --border: rgba(255, 255, 255, 0.1);
-            --accent-primary: #00f2fe;
-            --accent-secondary: #4facfe;
-            --danger: #ff4b5c;
-            --safe: #00d9b8;
+            --accent-primary: #56B4E9;
+            --accent-secondary: #0072B2;
+            --danger: #D55E00;
+            --safe: #56B4E9;
             --text-main: #e2e8f0;
             --text-dim: #94a3b8;
         }
@@ -17456,8 +17457,7 @@
 
     // 10-color palette consistent with the rest of the suite
     const RADAR_PALETTE = [
-        '#00f2fe','#4facfe','#a78bfa','#34d399','#fb923c',
-        '#f472b6','#60a5fa','#facc15','#2dd4bf','#f87171'
+        '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7', '#000000'
     ];
 
     function init() {
@@ -17543,8 +17543,8 @@
 
         const radiusScale = d3.scaleSqrt().domain([0, d3.max(phrases, d => d.count)]).range([5, 45]);
         const colorInterpolator = currentMode === 'dangerous' 
-            ? d3.interpolateRgbBasis(["#00d9b8", "#ffe066", "#ff4b5c"])
-            : d3.interpolateRgbBasis(["#ff4b5c", "#ffe066", "#00d9b8"]);
+            ? d3.interpolateRgbBasis(["#56B4E9", "#ffe066", "#D55E00"])
+            : d3.interpolateRgbBasis(["#D55E00", "#ffe066", "#56B4E9"]);
         const domain = currentMode === 'dangerous' ? [0, 10] : [10, 0];
         const colorScale = d3.scaleSequential().domain(domain).interpolator(colorInterpolator);
 
@@ -17641,7 +17641,7 @@
                             backgroundColor: 'rgba(10,12,16,0.92)',
                             titleColor:      '#e2e8f0',
                             bodyColor:       '#94a3b8',
-                            borderColor:     'rgba(0,242,254,0.25)',
+                            borderColor:     'rgba(86, 180, 233, 0.25)',
                             borderWidth:     1,
                             padding:         12,
                             cornerRadius:    8,
@@ -17675,9 +17675,9 @@
                     datasets: [{
                         label:               viewId === 'overall' ? 'Overall Avg' : viewId,
                         data:                chartData,
-                        backgroundColor:     'rgba(0,242,254,0.15)',
-                        borderColor:         '#00f2fe',
-                        pointBackgroundColor: '#00f2fe',
+                        backgroundColor:     'rgba(86, 180, 233, 0.15)',
+                        borderColor:         '#56B4E9',
+                        pointBackgroundColor: '#56B4E9',
                         pointBorderColor:    'rgba(10,12,16,0.7)',
                         pointBorderWidth:    1.5,
                         pointRadius:         4,
@@ -17696,7 +17696,7 @@
                             backgroundColor: 'rgba(10,12,16,0.92)',
                             titleColor:      '#e2e8f0',
                             bodyColor:       '#94a3b8',
-                            borderColor:     'rgba(0,242,254,0.25)',
+                            borderColor:     'rgba(86, 180, 233, 0.25)',
                             borderWidth:     1,
                             padding:         12,
                             cornerRadius:    8,
@@ -17743,6 +17743,7 @@
 
     document.getElementById('refresh-btn').addEventListener('click', () => location.reload());
     init();
-</script>
+    </script>
+    <script src="ieee_toggle.js"></script>
 </body>
 </html>

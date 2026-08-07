@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phrase Intelligence — Archetypes & Matrices</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="ieee_style.css">
     <style>
         :root {
             --bg: #0a0c10;
@@ -14,12 +15,12 @@
             --border: rgba(255, 255, 255, 0.1);
             --text-main: #e2e8f0;
             --text-dim: #94a3b8;
-            --accent-primary: #00f2fe;
-            --accent-secondary: #4facfe;
-            --safe: #10b981;
-            --danger: #ef4444;
-            --warn: #f59e0b;
-            --partial: #8b5cf6;
+            --accent-primary: #56B4E9;
+            --accent-secondary: #0072B2;
+            --safe: #56B4E9;
+            --danger: #D55E00;
+            --warn: #E69F00;
+            --partial: #F0E442;
             --glass: blur(20px);
         }
 
@@ -136,7 +137,8 @@
         }
 
         .chart-card {
-            background: var(--surface);
+            background: #ffffff;
+            color: #111111;
             border: 1px solid var(--border);
             border-radius: 24px;
             padding: 30px;
@@ -146,7 +148,7 @@
         .chart-card h3 {
             font-size: 18px;
             margin-bottom: 20px;
-            color: var(--text-dim);
+            color: #333333;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -158,7 +160,7 @@
             gap: 16px;
             margin-top: 20px;
             font-size: 11px;
-            color: var(--text-dim);
+            color: #555555;
             justify-content: center;
         }
 
@@ -289,6 +291,152 @@
         .animate {
             animation: slideIn 0.5s ease forwards;
         }
+
+        /* Volatility Insights Section styling */
+        .volatility-section {
+            margin-bottom: 40px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            background: var(--surface-hover);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .stat-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1.2;
+        }
+
+        .stat-sub {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+
+        .stat-vol-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .stat-vol-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        .stat-vol-item strong {
+            color: var(--text-main);
+            font-size: 14px;
+        }
+
+        .stat-vol-item span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tooltip-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-dim);
+            font-size: 10px;
+            cursor: help;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .tooltip-icon:hover {
+            background: rgba(255, 255, 255, 0.25);
+            color: var(--text-main);
+        }
+
+        /* Tooltip styling */
+        .tooltip-icon::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: calc(100% + 8px);
+            right: 50%;
+            transform: translateX(50%) scale(0.9);
+            background: #0f172a;
+            color: #f8fafc;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            line-height: 1.4;
+            width: 240px;
+            white-space: normal;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+            text-align: left;
+            font-weight: normal;
+        }
+
+        .tooltip-icon:hover::after {
+            opacity: 1;
+            transform: translateX(50%) scale(1);
+        }
+
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
@@ -311,6 +459,80 @@
 
     <div class="container">
 
+        <!-- Volatility Insights Section -->
+        <div class="volatility-section animate" style="animation-delay: 0.05s;">
+            <div class="section-header" style="margin-top: 0;">
+                <h2>Volatility & Cross-Model Transferability Insights</h2>
+                <div class="line"></div>
+            </div>
+            
+            <!-- Stats Cards Grid -->
+            <div class="stats-grid">
+                <!-- Card 1: Dataset Volume -->
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Dataset Volume</span>
+                        <span class="tooltip-icon" data-tooltip="Total prompts analyzed and safety label distribution. Volatility represents cross-model danger variance.">ⓘ</span>
+                    </div>
+                    <div class="stat-value" id="stat-total-prompts">-</div>
+                    <div class="stat-sub" id="stat-pv-volume">-</div>
+                </div>
+                
+                <!-- Card 2: Volatility by Outcome -->
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Avg Volatility (Std Dev)</span>
+                        <span class="tooltip-icon" data-tooltip="Volatility measured as the standard deviation of danger scores across model combinations. A higher value indicates safety/danger response depends heavily on the model configuration.">ⓘ</span>
+                    </div>
+                    <div class="stat-vol-list">
+                        <div class="stat-vol-item">
+                            <span><span class="dot" style="background:var(--danger)"></span>Policy Violations:</span>
+                            <strong id="stat-vol-pv">-</strong>
+                        </div>
+                        <div class="stat-vol-item">
+                            <span><span class="dot" style="background:var(--partial)"></span>Partial Compliance:</span>
+                            <strong id="stat-vol-pc">-</strong>
+                        </div>
+                        <div class="stat-vol-item">
+                            <span><span class="dot" style="background:var(--safe)"></span>Safe Refusals:</span>
+                            <strong id="stat-vol-sr">-</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Card 3: Volatility Thresholds -->
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">PV Volatility Thresholds</span>
+                        <span class="tooltip-icon" data-tooltip="Percentage of policy-violating prompts exceeding specific standard deviation thresholds across models.">ⓘ</span>
+                    </div>
+                    <div class="stat-vol-list">
+                        <div class="stat-vol-item">
+                            <span>Std Dev > 2.0:</span>
+                            <strong id="stat-pv-gt2">-</strong>
+                        </div>
+                        <div class="stat-vol-item">
+                            <span>Std Dev > 3.0:</span>
+                            <strong id="stat-pv-gt3">-</strong>
+                        </div>
+                        <div class="stat-vol-item">
+                            <span>Std Dev > 4.0:</span>
+                            <strong id="stat-pv-gt4">-</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Card 4: Reliable Jailbreaks -->
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Reliable Jailbreaks</span>
+                        <span class="tooltip-icon" data-tooltip="Policy-violating prompts with high danger (avg danger >= 6.0) and low volatility (std_dev < 2.0), indicating highly transferable attacks that succeed across model boundaries.">ⓘ</span>
+                    </div>
+                    <div class="stat-value" id="stat-reliable-pct">-</div>
+                    <div class="stat-sub" id="stat-reliable-count">-</div>
+                </div>
+            </div>        </div>
+
         <!-- Dual Matrices -->
         <div class="matrix-grid">
             <!-- Matrix 1: Volatility vs Danger (Original) -->
@@ -320,11 +542,9 @@
                     <canvas id="dangerMatrix"></canvas>
                 </div>
                 <div class="matrix-legend">
-                    <div class="legend-item"><span class="dot" style="background:var(--safe)"></span> Low Danger</div>
-                    <div class="legend-item"><span class="dot" style="background:var(--warn)"></span> High Volatility
-                    </div>
-                    <div class="legend-item"><span class="dot" style="background:var(--danger)"></span> Consistently
-                        Dangerous</div>
+                    <div class="legend-item"><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:var(--safe)"></span> Safe (Circle)</div>
+                    <div class="legend-item"><span style="display:inline-block; width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-bottom:10px solid var(--warn)"></span> Volatile (Triangle)</div>
+                    <div class="legend-item"><span style="display:inline-block; width:10px; height:10px; background:var(--danger)"></span> Dangerous (Square)</div>
                 </div>
             </div>
 
@@ -335,11 +555,9 @@
                     <canvas id="outcomeMatrix"></canvas>
                 </div>
                 <div class="matrix-legend">
-                    <div class="legend-item"><span class="dot" style="background:var(--safe)"></span> Safe Refusal</div>
-                    <div class="legend-item"><span class="dot" style="background:var(--partial)"></span> Partial
-                        Compliance</div>
-                    <div class="legend-item"><span class="dot" style="background:var(--danger)"></span> Policy Violation
-                    </div>
+                    <div class="legend-item"><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:var(--safe)"></span> Safe Refusal (Circle)</div>
+                    <div class="legend-item"><span style="display:inline-block; width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-bottom:10px solid var(--partial)"></span> Partial Compliance (Triangle)</div>
+                    <div class="legend-item"><span style="display:inline-block; width:10px; height:10px; transform:rotate(45deg); background:var(--danger)"></span> Policy Violation (Diamond)</div>
                 </div>
             </div>
         </div>
@@ -404,7 +622,7 @@
     </div>
 
     <script>
-        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.color = '#333333';
         Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
 
         async function init() {
@@ -423,6 +641,53 @@
                 label: s.label
             }));
 
+            // Dynamically calculate Volatility Insights metrics
+            const stats = intel.all_stats || [];
+            const totalCount = stats.length;
+            const pvStats = stats.filter(s => s.label === 'policy_violation');
+            const pcStats = stats.filter(s => s.label === 'partial_compliance');
+            const srStats = stats.filter(s => s.label === 'safe_refusal');
+
+            const pvCount = pvStats.length;
+            const pvPercent = totalCount > 0 ? (pvCount / totalCount * 100).toFixed(1) : '0.0';
+
+            const getAvgVol = (arr) => {
+                if (arr.length === 0) return '0.00';
+                const sum = arr.reduce((acc, s) => acc + s.std_dev, 0);
+                return (sum / arr.length).toFixed(2);
+            };
+
+            const pvVolAvg = getAvgVol(pvStats);
+            const pcVolAvg = getAvgVol(pcStats);
+            const srVolAvg = getAvgVol(srStats);
+
+            const getPvThresholdPercent = (threshold) => {
+                if (pvCount === 0) return '0.0';
+                const count = pvStats.filter(s => s.std_dev > threshold).length;
+                return (count / pvCount * 100).toFixed(1);
+            };
+
+            const pvGt2Percent = getPvThresholdPercent(2.0);
+            const pvGt3Percent = getPvThresholdPercent(3.0);
+            const pvGt4Percent = getPvThresholdPercent(4.0);
+
+            const reliablePvCount = pvStats.filter(s => s.avg >= 6.0 && s.std_dev < 2.0).length;
+            const reliablePvPercent = pvCount > 0 ? (reliablePvCount / pvCount * 100).toFixed(1) : '0.0';
+
+            // Populate Volatility Insights DOM elements
+            document.getElementById('stat-total-prompts').innerText = totalCount.toLocaleString();
+            document.getElementById('stat-pv-volume').innerText = `${pvCount} Policy Violations (${pvPercent}%)`;
+            document.getElementById('stat-vol-pv').innerText = pvVolAvg;
+            document.getElementById('stat-vol-pc').innerText = pcVolAvg;
+            document.getElementById('stat-vol-sr').innerText = srVolAvg;
+            document.getElementById('stat-pv-gt2').innerText = `${pvGt2Percent}%`;
+            document.getElementById('stat-pv-gt3').innerText = `${pvGt3Percent}%`;
+            document.getElementById('stat-pv-gt4').innerText = `${pvGt4Percent}%`;
+            document.getElementById('stat-reliable-pct').innerText = `${reliablePvPercent}%`;
+            document.getElementById('stat-reliable-count').innerText = `${reliablePvCount} of ${pvCount} Violations`;
+
+
+
             // Matrix 1: Danger/Volatility
             new Chart(document.getElementById('dangerMatrix'), {
                 type: 'scatter',
@@ -432,10 +697,19 @@
                         backgroundColor: (ctx) => {
                             const r = ctx.raw;
                             if (!r) return '#fff';
-                            if (r.y > 2.5) return 'rgba(245, 158, 11, 0.6)';
-                            if (r.x > 6) return 'rgba(239, 68, 68, 0.6)';
-                            return 'rgba(16, 185, 129, 0.6)';
-                        }
+                            if (r.y > 2.5) return 'rgba(230, 159, 0, 0.7)'; // Accessible Orange
+                            if (r.x > 6) return 'rgba(213, 94, 0, 0.7)';   // Accessible Vermillion
+                            return 'rgba(86, 180, 233, 0.7)';             // Accessible Sky Blue
+                        },
+                        pointStyle: (ctx) => {
+                            const r = ctx.raw;
+                            if (!r) return 'circle';
+                            if (r.y > 2.5) return 'triangle';
+                            if (r.x > 6) return 'rect';
+                            return 'circle';
+                        },
+                        pointRadius: 6,
+                        pointHoverRadius: 8
                     }]
                 },
                 options: getChartOptions('Avg Danger', 'Volatility (Std Dev)')
@@ -450,10 +724,19 @@
                         backgroundColor: (ctx) => {
                             const r = ctx.raw;
                             if (!r) return '#fff';
-                            if (r.label === 'policy_violation') return 'rgba(239, 68, 68, 0.7)';
-                            if (r.label === 'partial_compliance') return 'rgba(139, 92, 246, 0.7)';
-                            return 'rgba(16, 185, 129, 0.7)';
-                        }
+                            if (r.label === 'policy_violation') return 'rgba(213, 94, 0, 0.8)';
+                            if (r.label === 'partial_compliance') return 'rgba(240, 228, 66, 0.8)';
+                            return 'rgba(86, 180, 233, 0.8)';
+                        },
+                        pointStyle: (ctx) => {
+                            const r = ctx.raw;
+                            if (!r) return 'circle';
+                            if (r.label === 'policy_violation') return 'rectRot';
+                            if (r.label === 'partial_compliance') return 'triangle';
+                            return 'circle';
+                        },
+                        pointRadius: 6,
+                        pointHoverRadius: 8
                     }]
                 },
                 options: getChartOptions('Avg Danger', 'Volatility (Std Dev)')
@@ -491,6 +774,7 @@
 
         init();
     </script>
+    <script src="ieee_toggle.js"></script>
 </body>
 
 </html>

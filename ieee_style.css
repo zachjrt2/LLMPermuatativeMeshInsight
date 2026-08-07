@@ -1,0 +1,208 @@
+/* IEEE Paper Compliant Styles */
+[data-theme="ieee"] {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-hover: #f0f0f0;
+    --border: #000000;
+    --text-main: #000000;
+    --text-dim: #333333;
+    --accent-primary: #000000;
+    --accent-secondary: #000000;
+    --glass: none;
+}
+
+[data-theme="ieee"] body {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 10pt;
+    line-height: 1.2;
+    background-image: none !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+[data-theme="ieee"] * {
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    animation: none !important;
+    transition: none !important;
+}
+
+/* Cards & Containers */
+[data-theme="ieee"] .summary-card,
+[data-theme="ieee"] .chart-container,
+[data-theme="ieee"] .filters,
+[data-theme="ieee"] .leaderboard,
+[data-theme="ieee"] .results-section,
+[data-theme="ieee"] .file-selector,
+[data-theme="ieee"] .chart-card,
+[data-theme="ieee"] .archetype-card,
+[data-theme="ieee"] .insight-card,
+[data-theme="ieee"] .node-details,
+[data-theme="ieee"] .card,
+[data-theme="ieee"] .stat-item,
+[data-theme="ieee"] .matrix-card,
+[data-theme="ieee"] .heatmap-card {
+    background: #ffffff !important;
+    border: 1px solid #000000 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 15px;
+}
+
+/* Force dark text inside all card containers in IEEE mode */
+[data-theme="ieee"] .card *,
+[data-theme="ieee"] .chart-card *,
+[data-theme="ieee"] .archetype-card *,
+[data-theme="ieee"] .stat-item * {
+    color: #000000 !important;
+    background-image: none !important;
+    -webkit-text-fill-color: #000000 !important;
+}
+
+/* Global Header adjustments */
+[data-theme="ieee"] .global-header {
+    background: #ffffff !important;
+    border-bottom: 2px solid #000000 !important;
+}
+
+/* Navigation adjustments */
+[data-theme="ieee"] .global-nav {
+    background: transparent !important;
+    border: 1px solid #000000 !important;
+    border-radius: 0 !important;
+}
+
+[data-theme="ieee"] .nav-link {
+    color: #000000 !important;
+    border: 1px solid transparent !important;
+    border-radius: 0 !important;
+}
+
+[data-theme="ieee"] .nav-link.active {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
+    font-weight: bold !important;
+    box-shadow: none !important;
+}
+
+[data-theme="ieee"] .nav-link:hover {
+    background: #f0f0f0 !important;
+}
+
+/* Badges and Tags */
+[data-theme="ieee"] .badge, 
+[data-theme="ieee"] .mini-tag, 
+[data-theme="ieee"] .wall-tag,
+[data-theme="ieee"] .keyword-tag,
+[data-theme="ieee"] .legend-item .dot {
+    border-radius: 0 !important;
+    border: 1px solid #000000 !important;
+    background: transparent !important;
+    color: #000000 !important;
+    font-weight: bold;
+}
+
+/* Typography Overrides */
+[data-theme="ieee"] h1, [data-theme="ieee"] h2, [data-theme="ieee"] h3, [data-theme="ieee"] h4 {
+    font-family: "Times New Roman", Times, serif;
+    color: #000000 !important;
+    background: none !important;
+    -webkit-text-fill-color: #000000 !important;
+}
+
+[data-theme="ieee"] .summary-card .value {
+    background: none !important;
+    -webkit-text-fill-color: #000000 !important;
+    color: #000000 !important;
+}
+
+[data-theme="ieee"] .subtitle, 
+[data-theme="ieee"] .archetype-desc, 
+[data-theme="ieee"] .lazy-note {
+    color: #333333 !important;
+}
+
+/* Remove decorative elements */
+[data-theme="ieee"] .summary-card::before {
+    display: none !important;
+}
+
+[data-theme="ieee"] .archetype-card,
+[data-theme="ieee"] .response-detail-row {
+    border-left: 1px solid #000000 !important;
+}
+
+[data-theme="ieee"] .line {
+    background: #000000 !important;
+    height: 1px !important;
+}
+
+/* Buttons and Inputs */
+[data-theme="ieee"] button,
+[data-theme="ieee"] select,
+[data-theme="ieee"] input {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
+    border-radius: 0 !important;
+    font-family: "Times New Roman", Times, serif !important;
+}
+
+[data-theme="ieee"] button:hover {
+    background: #e0e0e0 !important;
+}
+
+/* Tables */
+[data-theme="ieee"] table,
+[data-theme="ieee"] .leaderboard-table,
+[data-theme="ieee"] .results-table {
+    border: 1px solid #000000 !important;
+    border-radius: 0 !important;
+}
+
+[data-theme="ieee"] th, [data-theme="ieee"] td {
+    border-bottom: 1px solid #000000 !important;
+    color: #000000 !important;
+}
+
+[data-theme="ieee"] thead {
+    background: transparent !important;
+}
+
+/* Filter checkboxes */
+[data-theme="ieee"] input[type="checkbox"] {
+    accent-color: #000000 !important;
+}
+
+/* Sliders */
+[data-theme="ieee"] input[type="range"]::-webkit-slider-thumb {
+    background: #000000 !important;
+    border: 1px solid #000000 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+/* Graphs/Canvas Styling */
+[data-theme="ieee"] canvas,
+[data-theme="ieee"] svg {
+    /* Grayscale removed per user request */
+}
+
+[data-theme="ieee"] .flow-container {
+    background: #ffffff !important;
+    border: 1px solid #000000 !important;
+}
+
+/* Additional Specific Overrides */
+[data-theme="ieee"] .example-item {
+    background: transparent !important;
+    border: 1px solid #000000 !important;
+    color: #000000 !important;
+}
+
+[data-theme="ieee"] .file-info {
+    border-left: 2px solid #000000 !important;
+    background: transparent !important;
+    color: #000000 !important;
+}

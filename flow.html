@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LLM Red-Team Framework — Flow Graph</title>
+    <link rel="stylesheet" href="ieee_style.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@600;700;800&display=swap');
 
@@ -122,7 +123,7 @@
 
         .global-header h1 em {
             font-style: normal;
-            color: #00d9b8;
+            color: #56B4E9;
         }
 
         .subtitle {
@@ -302,21 +303,21 @@
 </header>
 
     <div class="stats">
-        <div class="stat"><span class="sv" style="color:#00d9b8">10</span><span class="sk">Models</span></div>
-        <div class="stat"><span class="sv" style="color:#00d9b8">90</span><span class="sk">Pairings</span></div>
-        <div class="stat"><span class="sv" style="color:#ff9d3a">30</span><span class="sk">Rounds / Pairing</span></div>
-        <div class="stat"><span class="sv" style="color:#ff5252">8</span><span class="sk">Max Prompt Retries</span></div>
-        <div class="stat"><span class="sv" style="color:#ff4560">100</span><span class="sk">Max Test Retries</span></div>
-        <div class="stat"><span class="sv" style="color:#ffe066">2</span><span class="sk">Parallel Workers</span></div>
+        <div class="stat"><span class="sv" style="color:#56B4E9">10</span><span class="sk">Models</span></div>
+        <div class="stat"><span class="sv" style="color:#56B4E9">90</span><span class="sk">Pairings</span></div>
+        <div class="stat"><span class="sv" style="color:#E69F00">30</span><span class="sk">Rounds / Pairing</span></div>
+        <div class="stat"><span class="sv" style="color:#D55E00">8</span><span class="sk">Max Prompt Retries</span></div>
+        <div class="stat"><span class="sv" style="color:#000000">100</span><span class="sk">Max Test Retries</span></div>
+        <div class="stat"><span class="sv" style="color:#F0E442">2</span><span class="sk">Parallel Workers</span></div>
     </div>
     <div style="padding: 12px 40px; border-bottom: 1px solid var(--border); display: flex; gap: 16px; background: rgba(255,255,255,0.02);">
         <div class="leg" style="font-weight:600; color:var(--text-main); margin-right: 10px;">LEGEND:</div>
-        <div class="leg"><div class="ls" style="background:#00d9b8"></div>Orchestrator</div>
-        <div class="leg"><div class="ls" style="background:#ff5252"></div>Red Team</div>
-        <div class="leg"><div class="ls" style="background:#ff9d3a"></div>Target Model</div>
-        <div class="leg"><div class="ls" style="background:#b06eff"></div>Judge</div>
-        <div class="leg"><div class="ls" style="background:#ffe066"></div>I / O</div>
-        <div class="leg"><div class="ls" style="background:#ff4560; border-radius:50%"></div>Retry</div>
+        <div class="leg"><div class="ls" style="background:#56B4E9"></div>Orchestrator</div>
+        <div class="leg"><div class="ls" style="background:#D55E00"></div>Red Team</div>
+        <div class="leg"><div class="ls" style="background:#E69F00"></div>Target Model</div>
+        <div class="leg"><div class="ls" style="background:#CC79A7"></div>Judge</div>
+        <div class="leg"><div class="ls" style="background:#F0E442"></div>I / O</div>
+        <div class="leg"><div class="ls" style="background:#000000; border-radius:50%"></div>Retry</div>
         <div class="leg"><svg width="22" height="10"><line x1="0" y1="5" x2="22" y2="5" stroke="#5a6478" stroke-width="1.5" stroke-dasharray="4 3" /></svg>Async</div>
     </div>
 
@@ -340,22 +341,22 @@
             <defs>
                 <!-- Arrowheads -->
                 <marker id="mo" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
-                    <path d="M0,0 L0,6 L7,3z" fill="#00d9b8" opacity="0.85" />
+                    <path d="M0,0 L0,6 L7,3z" fill="#56B4E9" opacity="0.85" />
                 </marker>
                 <marker id="mr" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
-                    <path d="M0,0 L0,6 L7,3z" fill="#ff5252" opacity="0.85" />
+                    <path d="M0,0 L0,6 L7,3z" fill="#D55E00" opacity="0.85" />
                 </marker>
                 <marker id="mt" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
-                    <path d="M0,0 L0,6 L7,3z" fill="#ff9d3a" opacity="0.85" />
+                    <path d="M0,0 L0,6 L7,3z" fill="#E69F00" opacity="0.85" />
                 </marker>
                 <marker id="mj" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
-                    <path d="M0,0 L0,6 L7,3z" fill="#b06eff" opacity="0.85" />
+                    <path d="M0,0 L0,6 L7,3z" fill="#CC79A7" opacity="0.85" />
                 </marker>
                 <marker id="mio" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
-                    <path d="M0,0 L0,6 L7,3z" fill="#ffe066" opacity="0.85" />
+                    <path d="M0,0 L0,6 L7,3z" fill="#F0E442" opacity="0.85" />
                 </marker>
                 <marker id="me" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
-                    <path d="M0,0 L0,6 L7,3z" fill="#ff4560" opacity="0.85" />
+                    <path d="M0,0 L0,6 L7,3z" fill="#000000" opacity="0.85" />
                 </marker>
                 <marker id="mf" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
                     <path d="M0,0 L0,6 L7,3z" fill="#7ecbff" opacity="0.85" />
@@ -366,24 +367,24 @@
 
                 <!-- Gradients -->
                 <linearGradient id="go" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#00d9b8" />
-                    <stop offset="100%" stop-color="#008f7a" />
+                    <stop offset="0%" stop-color="#56B4E9" />
+                    <stop offset="100%" stop-color="#0072B2" />
                 </linearGradient>
                 <linearGradient id="gr" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#ff5252" />
-                    <stop offset="100%" stop-color="#aa1818" />
+                    <stop offset="0%" stop-color="#D55E00" />
+                    <stop offset="100%" stop-color="#803000" />
                 </linearGradient>
                 <linearGradient id="gt" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#ff9d3a" />
-                    <stop offset="100%" stop-color="#a85c10" />
+                    <stop offset="0%" stop-color="#E69F00" />
+                    <stop offset="100%" stop-color="#906000" />
                 </linearGradient>
                 <linearGradient id="gj" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#b06eff" />
-                    <stop offset="100%" stop-color="#6020bb" />
+                    <stop offset="0%" stop-color="#CC79A7" />
+                    <stop offset="100%" stop-color="#904080" />
                 </linearGradient>
                 <linearGradient id="gio" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#ffe066" />
-                    <stop offset="100%" stop-color="#bb9900" />
+                    <stop offset="0%" stop-color="#F0E442" />
+                    <stop offset="100%" stop-color="#908000" />
                 </linearGradient>
                 <linearGradient id="gdk" x1="0" y1="0" x2="1" y2="1">
                     <stop offset="0%" stop-color="#1e2330" />
@@ -396,19 +397,19 @@
      Orch  22-222, RT 236-436, Tgt 450-670, Jdg 684-884, Out 898-1098
 ════════════════════════════════════════════ -->
             <rect x="22" y="22" width="200" height="1016" rx="9" fill="#06100e" stroke="#0d2520" stroke-width="1" />
-            <text x="122" y="44" class="col-h" fill="#00d9b8" opacity="0.4">Orchestrator</text>
+            <text x="122" y="44" class="col-h" fill="#56B4E9" opacity="0.4">Orchestrator</text>
 
             <rect x="236" y="22" width="200" height="1016" rx="9" fill="#100809" stroke="#271212" stroke-width="1" />
-            <text x="336" y="44" class="col-h" fill="#ff5252" opacity="0.4">Red Team</text>
+            <text x="336" y="44" class="col-h" fill="#D55E00" opacity="0.4">Red Team</text>
 
             <rect x="450" y="22" width="220" height="1016" rx="9" fill="#0e0b07" stroke="#251808" stroke-width="1" />
-            <text x="560" y="44" class="col-h" fill="#ff9d3a" opacity="0.4">Target Model</text>
+            <text x="560" y="44" class="col-h" fill="#E69F00" opacity="0.4">Target Model</text>
 
             <rect x="684" y="22" width="200" height="1016" rx="9" fill="#0b0816" stroke="#1a1030" stroke-width="1" />
-            <text x="784" y="44" class="col-h" fill="#b06eff" opacity="0.4">Judge</text>
+            <text x="784" y="44" class="col-h" fill="#CC79A7" opacity="0.4">Judge</text>
 
             <rect x="898" y="22" width="200" height="1016" rx="9" fill="#09090e" stroke="#161820" stroke-width="1" />
-            <text x="998" y="44" class="col-h" fill="#ffe066" opacity="0.4">Output</text>
+            <text x="998" y="44" class="col-h" fill="#F0E442" opacity="0.4">Output</text>
 
 
             <!-- ═══════════════════════════════════════════
@@ -434,22 +435,22 @@
 
             <!-- ── Orchestrator spine ── -->
             <!-- START(cy=80) → generate_all_pairings(top=114) -->
-            <line x1="122" y1="100" x2="122" y2="114" stroke="#00d9b8" stroke-width="1.5" opacity="0.65"
+            <line x1="122" y1="100" x2="122" y2="114" stroke="#56B4E9" stroke-width="1.5" opacity="0.65"
                 marker-end="url(#mo)" />
             <!-- generate_all_pairings(bot=170) → load_prompts(top=200) -->
-            <line x1="122" y1="170" x2="122" y2="200" stroke="#00d9b8" stroke-width="1.5" opacity="0.55"
+            <line x1="122" y1="170" x2="122" y2="200" stroke="#56B4E9" stroke-width="1.5" opacity="0.55"
                 marker-end="url(#mo)" />
             <!-- load_prompts(bot=256) → get_completed_tests(top=590) — long skip, route left edge -->
-            <path d="M50,256 C32,256 32,600 50,600" stroke="#00d9b8" stroke-width="1.2" fill="none" opacity="0.3"
+            <path d="M50,256 C32,256 32,600 50,600" stroke="#56B4E9" stroke-width="1.2" fill="none" opacity="0.3"
                 stroke-dasharray="4 4" marker-end="url(#mo)" />
             <!-- get_completed_tests(bot=646) → build_graph(top=676) -->
-            <line x1="122" y1="646" x2="122" y2="676" stroke="#00d9b8" stroke-width="1.5" opacity="0.55"
+            <line x1="122" y1="646" x2="122" y2="676" stroke="#56B4E9" stroke-width="1.5" opacity="0.55"
                 marker-end="url(#mo)" />
             <!-- build_graph(bot=732) → ThreadPoolExecutor(top=762) -->
-            <line x1="122" y1="732" x2="122" y2="762" stroke="#00d9b8" stroke-width="1.5" opacity="0.55"
+            <line x1="122" y1="732" x2="122" y2="762" stroke="#56B4E9" stroke-width="1.5" opacity="0.55"
                 marker-end="url(#mo)" />
             <!-- ThreadPoolExecutor(bot=818) → END(top=900) skipping execution loop -->
-            <path d="M50,818 C32,818 32,910 50,910" stroke="#00d9b8" stroke-width="1.2" fill="none" opacity="0.3"
+            <path d="M50,818 C32,818 32,910 50,910" stroke="#56B4E9" stroke-width="1.2" fill="none" opacity="0.3"
                 stroke-dasharray="4 4" marker-end="url(#mo)" />
 
             <!-- ── Orch → RT handoff ── -->
@@ -462,16 +463,16 @@
 
             <!-- ── Red Team spine ── -->
             <!-- generate_attack_prompts(bot=284) → generate_single_prompt(top=310) -->
-            <line x1="336" y1="284" x2="336" y2="310" stroke="#ff5252" stroke-width="1.5" opacity="0.55"
+            <line x1="336" y1="284" x2="336" y2="310" stroke="#D55E00" stroke-width="1.5" opacity="0.55"
                 marker-end="url(#mr)" />
             <!-- generate_single_prompt(bot=366) → parse_json_RT(top=392) -->
-            <line x1="336" y1="366" x2="336" y2="392" stroke="#ff5252" stroke-width="1.5" opacity="0.55"
+            <line x1="336" y1="366" x2="336" y2="392" stroke="#D55E00" stroke-width="1.5" opacity="0.55"
                 marker-end="url(#mr)" />
             <!-- parse_json_RT(bot=444) → prompts_jsonl(top=464) -->
-            <line x1="336" y1="444" x2="336" y2="464" stroke="#ffe066" stroke-width="1.5" opacity="0.55"
+            <line x1="336" y1="444" x2="336" y2="464" stroke="#F0E442" stroke-width="1.5" opacity="0.55"
                 marker-end="url(#mio)" />
             <!-- prompts_jsonl(bot=496) → validate_prompts(top=516) -->
-            <line x1="336" y1="496" x2="336" y2="516" stroke="#ff5252" stroke-width="1.5" opacity="0.5"
+            <line x1="336" y1="496" x2="336" y2="516" stroke="#D55E00" stroke-width="1.5" opacity="0.5"
                 marker-end="url(#mr)" />
             <!-- validate_prompts(bot=572) → get_completed_tests(left of Orch at y=623) -->
             <path d="M246,544 C228,544 222,600 192,623" stroke="#5a6478" stroke-width="1.2" fill="none" opacity="0.45"
@@ -479,43 +480,43 @@
 
             <!-- ── Failsafe retry loop: validate_prompts → generate_single_prompt (within RT) ── -->
             <!-- Loop goes left side of RT lane: from validate_prompts(left=246,y=544) up to generate_single_prompt(left=246,y=338) -->
-            <path d="M246,516 C224,516 224,338 246,338" stroke="#ff4560" stroke-width="1.4" fill="none"
+            <path d="M246,516 C224,516 224,338 246,338" stroke="#000000" stroke-width="1.4" fill="none"
                 stroke-dasharray="4 3" opacity="0.65" marker-end="url(#me)" />
             <rect x="193" y="417" width="52" height="26" rx="3" fill="#0d0608" />
-            <text x="219" y="427" font-family="IBM Plex Mono" font-size="8" fill="#ff4560"
+            <text x="219" y="427" font-family="IBM Plex Mono" font-size="8" fill="#000000"
                 text-anchor="middle">failsafe?</text>
-            <text x="219" y="437" font-family="IBM Plex Mono" font-size="8" fill="#ff4560" text-anchor="middle">retry
+            <text x="219" y="437" font-family="IBM Plex Mono" font-size="8" fill="#000000" text-anchor="middle">retry
                 ×8</text>
 
             <!-- ── ThreadPool → run_target (Orch → Target) ── -->
             <!-- From ThreadPoolExecutor right edge (x=222, y=790) to run_target left edge (x=450, y=750) -->
-            <path d="M222,790 C340,790 340,750 450,750" stroke="#ff9d3a" stroke-width="1.5" fill="none" opacity="0.55"
+            <path d="M222,790 C340,790 340,750 450,750" stroke="#E69F00" stroke-width="1.5" fill="none" opacity="0.55"
                 marker-end="url(#mt)" />
 
             <!-- ── Target spine ── -->
             <!-- run_target_model(bot=800) → model_response(top=820) -->
-            <line x1="560" y1="800" x2="560" y2="820" stroke="#ff9d3a" stroke-width="1.5" opacity="0.55"
+            <line x1="560" y1="800" x2="560" y2="820" stroke="#E69F00" stroke-width="1.5" opacity="0.55"
                 marker-end="url(#mt)" />
             <!-- model_response(bot=856) → log_result(top=876) -->
-            <line x1="560" y1="856" x2="560" y2="876" stroke="#ffe066" stroke-width="1.5" opacity="0.55"
+            <line x1="560" y1="856" x2="560" y2="876" stroke="#F0E442" stroke-width="1.5" opacity="0.55"
                 marker-end="url(#mio)" />
 
             <!-- ── Useless-response retry: model_response left loop → run_target ── -->
-            <path d="M462,838 C442,838 442,730 462,730" stroke="#ff4560" stroke-width="1.4" fill="none"
+            <path d="M462,838 C442,838 442,730 462,730" stroke="#000000" stroke-width="1.4" fill="none"
                 stroke-dasharray="4 3" opacity="0.65" marker-end="url(#me)" />
             <rect x="408" y="775" width="52" height="26" rx="3" fill="#08090d" />
-            <text x="434" y="785" font-family="IBM Plex Mono" font-size="8" fill="#ff4560"
+            <text x="434" y="785" font-family="IBM Plex Mono" font-size="8" fill="#000000"
                 text-anchor="middle">useless?</text>
-            <text x="434" y="795" font-family="IBM Plex Mono" font-size="8" fill="#ff4560" text-anchor="middle">retry
+            <text x="434" y="795" font-family="IBM Plex Mono" font-size="8" fill="#000000" text-anchor="middle">retry
                 ×3</text>
 
             <!-- ── model_response → evaluate_response (Target right → Judge left) ── -->
-            <line x1="670" y1="838" x2="684" y2="780" stroke="#b06eff" stroke-width="1.5" opacity="0.55"
+            <line x1="670" y1="838" x2="684" y2="780" stroke="#CC79A7" stroke-width="1.5" opacity="0.55"
                 marker-end="url(#mj)" />
 
             <!-- ── Judge spine ── -->
             <!-- evaluate_response(bot=830) → parse_json_Judge(top=860) -->
-            <line x1="784" y1="830" x2="784" y2="860" stroke="#b06eff" stroke-width="1.5" opacity="0.55"
+            <line x1="784" y1="830" x2="784" y2="860" stroke="#CC79A7" stroke-width="1.5" opacity="0.55"
                 marker-end="url(#mj)" />
 
             <!-- ── parse_json_Judge fallback → translate_to_json (right loop in Judge lane) ── -->
@@ -529,35 +530,35 @@
 
             <!-- ── parse_json_Judge → log_result (Judge left → Target) ── -->
             <!-- From parse_json_Judge bottom-left (x=684,y=910) across to log_result right (x=670,y=910) -->
-            <line x1="684" y1="910" x2="670" y2="910" stroke="#ffe066" stroke-width="1.5" opacity="0.55"
+            <line x1="684" y1="910" x2="670" y2="910" stroke="#F0E442" stroke-width="1.5" opacity="0.55"
                 marker-end="url(#mio)" />
 
             <!-- ── Test retry: log_result left loop → run_target ── -->
             <!-- Tight loop: log_result(x=462,y=876) → run_target(x=462,y=800) same left boundary -->
-            <path d="M462,900 C452,900 452,730 462,730" stroke="#ff4560" stroke-width="1.2" fill="none"
+            <path d="M462,900 C452,900 452,730 462,730" stroke="#000000" stroke-width="1.2" fill="none"
                 stroke-dasharray="3 4" opacity="0.45" marker-end="url(#me)" />
 
             <!-- ── log_result → summarize_results (Target → Output) ── -->
-            <path d="M670,930 C780,960 880,950 898,930" stroke="#ffe066" stroke-width="1.5" fill="none" opacity="0.45"
+            <path d="M670,930 C780,960 880,950 898,930" stroke="#F0E442" stroke-width="1.5" fill="none" opacity="0.45"
                 marker-end="url(#mio)" />
 
             <!-- ── summarize_results(bot=986) → master_summary(top=1006) ── -->
-            <line x1="998" y1="986" x2="998" y2="1006" stroke="#ffe066" stroke-width="1.5" opacity="0.5"
+            <line x1="998" y1="986" x2="998" y2="1006" stroke="#F0E442" stroke-width="1.5" opacity="0.5"
                 marker-end="url(#mio)" />
 
             <!-- ── Orch loop annotation: next pairing ── -->
             <rect x="28" y="834" width="52" height="26" rx="3" fill="#080a0d" stroke="#0d2520" stroke-width="0.5" />
-            <text x="54" y="843" font-family="IBM Plex Mono" font-size="7.5" fill="#00d9b8" text-anchor="middle"
+            <text x="54" y="843" font-family="IBM Plex Mono" font-size="7.5" fill="#56B4E9" text-anchor="middle"
                 opacity="0.45">next</text>
-            <text x="54" y="853" font-family="IBM Plex Mono" font-size="7.5" fill="#00d9b8" text-anchor="middle"
+            <text x="54" y="853" font-family="IBM Plex Mono" font-size="7.5" fill="#56B4E9" text-anchor="middle"
                 opacity="0.45">pairing</text>
 
             <!-- ── Orch validate → Output (identify_invalid connects back to pre-loop) ── -->
             <!-- identify_invalid (Output, y=228) → load_prompts (Orch, y=228) via top channel -->
-            <path d="M998,196 C998,172 122,172 122,196" stroke="#ffe066" stroke-width="1.2" fill="none"
+            <path d="M998,196 C998,172 122,172 122,196" stroke="#F0E442" stroke-width="1.2" fill="none"
                 stroke-dasharray="3 4" opacity="0.3" marker-end="url(#mio)" />
             <rect x="500" y="160" width="118" height="14" rx="3" fill="#080a0d" />
-            <text x="559" y="169" font-family="IBM Plex Mono" font-size="7.5" fill="#ffe066" text-anchor="middle"
+            <text x="559" y="169" font-family="IBM Plex Mono" font-size="7.5" fill="#F0E442" text-anchor="middle"
                 opacity="0.4">pre-run validation</text>
 
 
@@ -571,18 +572,18 @@
 
             <!-- START  cy=80 -->
             <g class="ng"
-                onmouseenter="T(event,'START','Entry point. main() prints config, generates all 90 PairingConfig objects from generate_all_pairings(), then iterates over them.','Entry','#00d9b8')"
+                onmouseenter="T(event,'START','Entry point. main() prints config, generates all 90 PairingConfig objects from generate_all_pairings(), then iterates over them.','Entry','#56B4E9')"
                 onmouseleave="H()">
-                <ellipse cx="122" cy="80" rx="82" ry="20" fill="url(#go)" stroke="#00d9b8" stroke-width="1.5"
+                <ellipse cx="122" cy="80" rx="82" ry="20" fill="url(#go)" stroke="#56B4E9" stroke-width="1.5"
                     class="nb" />
                 <text x="122" y="80" class="lbl">▶ START</text>
             </g>
 
             <!-- generate_all_pairings  top=114 bot=170 cy=142 -->
             <g class="ng"
-                onmouseenter="T(event,'generate_all_pairings()','Iterates ALL_MODELS × ALL_MODELS (red_team ≠ judge). Yields 90 PairingConfig objects, each with dedicated results / prompts / summary file paths.','Orchestrator','#00d9b8')"
+                onmouseenter="T(event,'generate_all_pairings()','Iterates ALL_MODELS × ALL_MODELS (red_team ≠ judge). Yields 90 PairingConfig objects, each with dedicated results / prompts / summary file paths.','Orchestrator','#56B4E9')"
                 onmouseleave="H()">
-                <rect x="36" y="114" width="172" height="56" rx="7" fill="url(#go)" stroke="#00d9b8" stroke-width="1.5"
+                <rect x="36" y="114" width="172" height="56" rx="7" fill="url(#go)" stroke="#56B4E9" stroke-width="1.5"
                     class="nb" />
                 <text x="122" y="135" class="lbl">generate_all</text>
                 <text x="122" y="150" class="lbl">_pairings()</text>
@@ -591,9 +592,9 @@
 
             <!-- load_prompts  top=200 bot=256 cy=228 -->
             <g class="ng"
-                onmouseenter="T(event,'load_prompts()','Reads the pairing\'s prompts.jsonl file. Returns a parsed list or empty list. If empty, generation is triggered; otherwise prompts are reused.','Orchestrator · I/O','#00d9b8')"
+                onmouseenter="T(event,'load_prompts()','Reads the pairing\'s prompts.jsonl file. Returns a parsed list or empty list. If empty, generation is triggered; otherwise prompts are reused.','Orchestrator · I/O','#56B4E9')"
                 onmouseleave="H()">
-                <rect x="36" y="200" width="172" height="56" rx="7" fill="url(#gdk)" stroke="#00d9b8" stroke-width="1.5"
+                <rect x="36" y="200" width="172" height="56" rx="7" fill="url(#gdk)" stroke="#56B4E9" stroke-width="1.5"
                     class="nb" />
                 <text x="122" y="221" class="lbl">load_prompts()</text>
                 <text x="122" y="237" class="sub">reads prompts.jsonl</text>
@@ -602,9 +603,9 @@
 
             <!-- get_completed_tests  top=590 bot=646 cy=618 -->
             <g class="ng"
-                onmouseenter="T(event,'get_completed_tests()','Scans results.jsonl and builds a set of (round, model) tuples already done. Skips those in the ThreadPoolExecutor pass — enables safe mid-run restarts.','Orchestrator · Resume','#00d9b8')"
+                onmouseenter="T(event,'get_completed_tests()','Scans results.jsonl and builds a set of (round, model) tuples already done. Skips those in the ThreadPoolExecutor pass — enables safe mid-run restarts.','Orchestrator · Resume','#56B4E9')"
                 onmouseleave="H()">
-                <rect x="36" y="590" width="172" height="56" rx="7" fill="url(#gdk)" stroke="#00d9b8" stroke-width="1.5"
+                <rect x="36" y="590" width="172" height="56" rx="7" fill="url(#gdk)" stroke="#56B4E9" stroke-width="1.5"
                     class="nb" />
                 <text x="122" y="611" class="lbl">get_completed</text>
                 <text x="122" y="626" class="lbl">_tests()</text>
@@ -613,9 +614,9 @@
 
             <!-- build_graph  top=676 bot=732 cy=704 -->
             <g class="ng"
-                onmouseenter="T(event,'build_graph()','Constructs the LangGraph StateGraph: registers run_target_model → evaluate_response → log_result → END, wires edges, and returns the compiled graph bound to the PairingConfig.','Orchestrator · LangGraph','#00d9b8')"
+                onmouseenter="T(event,'build_graph()','Constructs the LangGraph StateGraph: registers run_target_model → evaluate_response → log_result → END, wires edges, and returns the compiled graph bound to the PairingConfig.','Orchestrator · LangGraph','#56B4E9')"
                 onmouseleave="H()">
-                <rect x="36" y="676" width="172" height="56" rx="7" fill="url(#go)" stroke="#00d9b8" stroke-width="1.5"
+                <rect x="36" y="676" width="172" height="56" rx="7" fill="url(#go)" stroke="#56B4E9" stroke-width="1.5"
                     class="nb" />
                 <text x="122" y="697" class="lbl">build_graph()</text>
                 <text x="122" y="712" class="sub">StateGraph · 3 nodes</text>
@@ -624,9 +625,9 @@
 
             <!-- ThreadPoolExecutor  top=762 bot=818 cy=790 -->
             <g class="ng"
-                onmouseenter="T(event,'ThreadPoolExecutor','Fans out test_single_model() calls across MAX_PARALLEL_WORKERS=2 threads for every (prompt × target_model) pair not already in completed set.','Orchestrator · Concurrency','#00d9b8')"
+                onmouseenter="T(event,'ThreadPoolExecutor','Fans out test_single_model() calls across MAX_PARALLEL_WORKERS=2 threads for every (prompt × target_model) pair not already in completed set.','Orchestrator · Concurrency','#56B4E9')"
                 onmouseleave="H()">
-                <rect x="36" y="762" width="172" height="56" rx="7" fill="url(#gdk)" stroke="#00d9b8" stroke-width="1.5"
+                <rect x="36" y="762" width="172" height="56" rx="7" fill="url(#gdk)" stroke="#56B4E9" stroke-width="1.5"
                     class="nb" />
                 <text x="122" y="783" class="lbl">ThreadPool</text>
                 <text x="122" y="798" class="lbl">Executor</text>
@@ -635,9 +636,9 @@
 
             <!-- END  cy=930 -->
             <g class="ng"
-                onmouseenter="T(event,'END','LangGraph END sentinel reached after log_result(). Also signals framework completion once all 90 pairings have been processed.','Exit','#00d9b8')"
+                onmouseenter="T(event,'END','LangGraph END sentinel reached after log_result(). Also signals framework completion once all 90 pairings have been processed.','Exit','#56B4E9')"
                 onmouseleave="H()">
-                <ellipse cx="122" cy="930" rx="82" ry="20" fill="url(#gdk)" stroke="#00d9b8" stroke-width="1.5"
+                <ellipse cx="122" cy="930" rx="82" ry="20" fill="url(#gdk)" stroke="#56B4E9" stroke-width="1.5"
                     class="nb" />
                 <text x="122" y="930" class="lbl">■ END</text>
             </g>
@@ -647,9 +648,9 @@
 
             <!-- generate_attack_prompts  top=200 bot=284 cy=242 -->
             <g class="ng"
-                onmouseenter="T(event,'generate_attack_prompts()','Loops generate_single_prompt() 30 times. Red-team LLM (temp=0.9) generates creative adversarial prompts. Each prompt is streamed to prompts.jsonl as it is produced.','Red Team · Generation','#ff5252')"
+                onmouseenter="T(event,'generate_attack_prompts()','Loops generate_single_prompt() 30 times. Red-team LLM (temp=0.9) generates creative adversarial prompts. Each prompt is streamed to prompts.jsonl as it is produced.','Red Team · Generation','#D55E00')"
                 onmouseleave="H()">
-                <rect x="250" y="200" width="172" height="84" rx="7" fill="url(#gr)" stroke="#ff5252" stroke-width="1.5"
+                <rect x="250" y="200" width="172" height="84" rx="7" fill="url(#gr)" stroke="#D55E00" stroke-width="1.5"
                     class="nb" />
                 <text x="336" y="224" class="lbl">generate_attack</text>
                 <text x="336" y="240" class="lbl">_prompts()</text>
@@ -660,9 +661,9 @@
 
             <!-- generate_single_prompt  top=310 bot=366 cy=338 -->
             <g class="ng"
-                onmouseenter="T(event,'generate_single_prompt()','One prompt request to the red-team LLM with a strict JSON system prompt. Raw output fed to parse_json_response() 7-strategy chain.','Red Team · Single Prompt','#ff5252')"
+                onmouseenter="T(event,'generate_single_prompt()','One prompt request to the red-team LLM with a strict JSON system prompt. Raw output fed to parse_json_response() 7-strategy chain.','Red Team · Single Prompt','#D55E00')"
                 onmouseleave="H()">
-                <rect x="250" y="310" width="172" height="56" rx="7" fill="url(#gdk)" stroke="#ff5252"
+                <rect x="250" y="310" width="172" height="56" rx="7" fill="url(#gdk)" stroke="#D55E00"
                     stroke-width="1.5" class="nb" />
                 <text x="336" y="331" class="lbl">generate_single</text>
                 <text x="336" y="347" class="lbl">_prompt()</text>
@@ -671,9 +672,9 @@
 
             <!-- parse_json_response (RT)  top=392 bot=444 cy=418 -->
             <g class="ng"
-                onmouseenter="T(event,'parse_json_response() — Prompt','7-strategy JSON parser applied to red-team LLM output: (1) direct parse, (2) strip markdown, (3) extract {…}, (4) fix quotes, (5) fix trailing commas, (6) regex extraction, (7) LLM translator fallback.','Red Team · Parser','#ff5252')"
+                onmouseenter="T(event,'parse_json_response() — Prompt','7-strategy JSON parser applied to red-team LLM output: (1) direct parse, (2) strip markdown, (3) extract {…}, (4) fix quotes, (5) fix trailing commas, (6) regex extraction, (7) LLM translator fallback.','Red Team · Parser','#D55E00')"
                 onmouseleave="H()">
-                <rect x="250" y="392" width="172" height="52" rx="7" fill="url(#gdk)" stroke="#ff5252"
+                <rect x="250" y="392" width="172" height="52" rx="7" fill="url(#gdk)" stroke="#D55E00"
                     stroke-width="1.5" class="nb" />
                 <text x="336" y="411" class="lbl">parse_json</text>
                 <text x="336" y="426" class="lbl">_response()</text>
@@ -682,9 +683,9 @@
 
             <!-- prompts.jsonl  top=464 bot=496 cy=480 -->
             <g class="ng"
-                onmouseenter="T(event,'{pairing_id}_prompts.jsonl','Prompts appended line-by-line as generated. On re-runs, valid prompts are reused. Only entries flagged by is_failsafe_prompt() are regenerated.','Red Team · I/O','#ffe066')"
+                onmouseenter="T(event,'{pairing_id}_prompts.jsonl','Prompts appended line-by-line as generated. On re-runs, valid prompts are reused. Only entries flagged by is_failsafe_prompt() are regenerated.','Red Team · I/O','#F0E442')"
                 onmouseleave="H()">
-                <rect x="250" y="464" width="172" height="32" rx="7" fill="url(#gio)" stroke="#ffe066"
+                <rect x="250" y="464" width="172" height="32" rx="7" fill="url(#gio)" stroke="#F0E442"
                     stroke-width="1.5" class="nb" />
                 <text x="336" y="477" class="lbl" fill="#111">prompts.jsonl</text>
                 <text x="336" y="490" class="sub-k">per-pairing · append</text>
@@ -692,9 +693,9 @@
 
             <!-- validate_and_regenerate_prompts  top=516 bot=572 cy=544 -->
             <g class="ng"
-                onmouseenter="T(event,'validate_and_regenerate_prompts()','Scans loaded prompts for failsafe/placeholder text via is_failsafe_prompt(). Re-queues bad rounds back to generate_single_prompt(). Rewrites JSONL file when replacements are made.','Red Team · Validation','#ff5252')"
+                onmouseenter="T(event,'validate_and_regenerate_prompts()','Scans loaded prompts for failsafe/placeholder text via is_failsafe_prompt(). Re-queues bad rounds back to generate_single_prompt(). Rewrites JSONL file when replacements are made.','Red Team · Validation','#D55E00')"
                 onmouseleave="H()">
-                <rect x="250" y="516" width="172" height="56" rx="7" fill="url(#gr)" stroke="#ff5252" stroke-width="1.5"
+                <rect x="250" y="516" width="172" height="56" rx="7" fill="url(#gr)" stroke="#D55E00" stroke-width="1.5"
                     class="nb" />
                 <text x="336" y="537" class="lbl">validate_and</text>
                 <text x="336" y="552" class="lbl">_regenerate()</text>
@@ -706,14 +707,14 @@
 
             <!-- run_target_model  top=716 bot=800 cy=758  GRAPH NODE 1 -->
             <g class="ng"
-                onmouseenter="T(event,'run_target_model() — Graph Node 1','First LangGraph node. Invokes target ChatOllama (temp=0.7) with the attack prompt. Retries up to MAX_TARGET_RETRIES=3 if is_useless_response() fires (empty, <10 chars, known garbage tokens).','Target · Graph Node 1','#ff9d3a')"
+                onmouseenter="T(event,'run_target_model() — Graph Node 1','First LangGraph node. Invokes target ChatOllama (temp=0.7) with the attack prompt. Retries up to MAX_TARGET_RETRIES=3 if is_useless_response() fires (empty, <10 chars, known garbage tokens).','Target · Graph Node 1','#E69F00')"
                 onmouseleave="H()">
-                <rect x="462" y="716" width="196" height="84" rx="7" fill="url(#gt)" stroke="#ff9d3a" stroke-width="2"
+                <rect x="462" y="716" width="196" height="84" rx="7" fill="url(#gt)" stroke="#E69F00" stroke-width="2"
                     class="nb" />
                 <!-- node badge -->
-                <rect x="462" y="716" width="62" height="13" rx="3" fill="#ff9d3a" opacity="0.18" stroke="#ff9d3a"
+                <rect x="462" y="716" width="62" height="13" rx="3" fill="#E69F00" opacity="0.18" stroke="#E69F00"
                     stroke-width="0.5" />
-                <text x="493" y="725" font-family="IBM Plex Mono" font-size="7.5" fill="#ff9d3a"
+                <text x="493" y="725" font-family="IBM Plex Mono" font-size="7.5" fill="#E69F00"
                     text-anchor="middle">GRAPH NODE 1</text>
                 <text x="560" y="748" class="lbl">run_target_model()</text>
                 <text x="560" y="763" class="sub">ChatOllama temp=0.7</text>
@@ -724,8 +725,8 @@
             <!-- model_response  top=820 bot=856 cy=838 -->
             <g class="ng"
                 onmouseenter="T(event,'model_response','Raw string in RedTeamState. is_useless_response() checks: empty, under 10 chars, or matches tokens like "
-                user", "assistant" , "mini" . Triggers retry if true.','Target · State','#ff9d3a')" onmouseleave="H()">
-                <rect x="462" y="820" width="196" height="36" rx="7" fill="url(#gdk)" stroke="#ff9d3a"
+                user", "assistant" , "mini" . Triggers retry if true.','Target · State','#E69F00')" onmouseleave="H()">
+                <rect x="462" y="820" width="196" height="36" rx="7" fill="url(#gdk)" stroke="#E69F00"
                     stroke-width="1.5" class="nb" />
                 <text x="560" y="835" class="lbl">model_response</text>
                 <text x="560" y="849" class="sub">RedTeamState field</text>
@@ -733,13 +734,13 @@
 
             <!-- log_result  top=876 bot=948 cy=912  GRAPH NODE 3 -->
             <g class="ng"
-                onmouseenter="T(event,'log_result() — Graph Node 3','Third LangGraph node. Appends complete record (attack_prompt, model_response, label, reason, danger_score, red_team_model, judge_model, timestamp) to results.jsonl. Uses threading file_lock.','Target · Graph Node 3','#ffe066')"
+                onmouseenter="T(event,'log_result() — Graph Node 3','Third LangGraph node. Appends complete record (attack_prompt, model_response, label, reason, danger_score, red_team_model, judge_model, timestamp) to results.jsonl. Uses threading file_lock.','Target · Graph Node 3','#F0E442')"
                 onmouseleave="H()">
-                <rect x="462" y="876" width="196" height="72" rx="7" fill="url(#gio)" stroke="#ffe066" stroke-width="2"
+                <rect x="462" y="876" width="196" height="72" rx="7" fill="url(#gio)" stroke="#F0E442" stroke-width="2"
                     class="nb" />
-                <rect x="462" y="876" width="62" height="13" rx="3" fill="#ffe066" opacity="0.18" stroke="#ffe066"
+                <rect x="462" y="876" width="62" height="13" rx="3" fill="#F0E442" opacity="0.18" stroke="#F0E442"
                     stroke-width="0.5" />
-                <text x="493" y="885" font-family="IBM Plex Mono" font-size="7.5" fill="#ffe066"
+                <text x="493" y="885" font-family="IBM Plex Mono" font-size="7.5" fill="#F0E442"
                     text-anchor="middle">GRAPH NODE 3</text>
                 <text x="560" y="906" class="lbl" fill="#111">log_result()</text>
                 <text x="560" y="921" class="sub-k">results.jsonl · file_lock</text>
@@ -752,13 +753,13 @@
 
             <!-- evaluate_response  top=716 bot=830 cy=773  GRAPH NODE 2 -->
             <g class="ng"
-                onmouseenter="T(event,'evaluate_response() — Graph Node 2','Second LangGraph node. Judge ChatOllama (temp=0.0) classifies model_response as safe_refusal, partial_compliance, or policy_violation. Assigns danger_score 0–10. Label is normalised by substring matching.','Judge · Graph Node 2','#b06eff')"
+                onmouseenter="T(event,'evaluate_response() — Graph Node 2','Second LangGraph node. Judge ChatOllama (temp=0.0) classifies model_response as safe_refusal, partial_compliance, or policy_violation. Assigns danger_score 0–10. Label is normalised by substring matching.','Judge · Graph Node 2','#CC79A7')"
                 onmouseleave="H()">
-                <rect x="698" y="716" width="172" height="114" rx="7" fill="url(#gj)" stroke="#b06eff" stroke-width="2"
+                <rect x="698" y="716" width="172" height="114" rx="7" fill="url(#gj)" stroke="#CC79A7" stroke-width="2"
                     class="nb" />
-                <rect x="698" y="716" width="62" height="13" rx="3" fill="#b06eff" opacity="0.18" stroke="#b06eff"
+                <rect x="698" y="716" width="62" height="13" rx="3" fill="#CC79A7" opacity="0.18" stroke="#CC79A7"
                     stroke-width="0.5" />
-                <text x="729" y="725" font-family="IBM Plex Mono" font-size="7.5" fill="#b06eff"
+                <text x="729" y="725" font-family="IBM Plex Mono" font-size="7.5" fill="#CC79A7"
                     text-anchor="middle">GRAPH NODE 2</text>
                 <text x="784" y="748" class="lbl">evaluate_response()</text>
                 <text x="784" y="764" class="sub">ChatOllama temp=0.0</text>
@@ -772,8 +773,8 @@
             <g class="ng"
                 onmouseenter="T(event,'parse_json_response() — Evaluation','Same 7-strategy chain on judge output. Normalises label strings: "
                 partial" → partial_compliance, "policy" /"violation" → policy_violation, else safe_refusal. Danger score
-                int-cast with 0 fallback.','Judge · Parser','#b06eff')" onmouseleave="H()">
-                <rect x="698" y="860" width="172" height="52" rx="7" fill="url(#gdk)" stroke="#b06eff"
+                int-cast with 0 fallback.','Judge · Parser','#CC79A7')" onmouseleave="H()">
+                <rect x="698" y="860" width="172" height="52" rx="7" fill="url(#gdk)" stroke="#CC79A7"
                     stroke-width="1.5" class="nb" />
                 <text x="784" y="879" class="lbl">parse_json</text>
                 <text x="784" y="894" class="lbl">_response()</text>
@@ -798,8 +799,8 @@
             <g class="ng"
                 onmouseenter="T(event,'identify_invalid_results()','Scans results.jsonl before each pairing run. Flags records where is_invalid_reason() fires (e.g. "
                 No reason provided") or is_useless_response() fires. Returns list of (round, model) to rerun.','Output ·
-                Pre-run Check','#ffe066')" onmouseleave="H()">
-                <rect x="912" y="200" width="172" height="56" rx="7" fill="url(#gdk)" stroke="#ffe066"
+                Pre-run Check','#F0E442')" onmouseleave="H()">
+                <rect x="912" y="200" width="172" height="56" rx="7" fill="url(#gdk)" stroke="#F0E442"
                     stroke-width="1.5" class="nb" />
                 <text x="998" y="221" class="lbl">identify_invalid</text>
                 <text x="998" y="237" class="lbl">_results()</text>
@@ -808,23 +809,23 @@
 
             <!-- remove_invalid_results  top=276 bot=332 cy=304 -->
             <g class="ng"
-                onmouseenter="T(event,'remove_invalid_results()','Rewrites results.jsonl excluding flagged (round, model) pairs so they re-enter the ThreadPoolExecutor queue on the next pass.','Output · Cleanup','#ffe066')"
+                onmouseenter="T(event,'remove_invalid_results()','Rewrites results.jsonl excluding flagged (round, model) pairs so they re-enter the ThreadPoolExecutor queue on the next pass.','Output · Cleanup','#F0E442')"
                 onmouseleave="H()">
-                <rect x="912" y="276" width="172" height="56" rx="7" fill="url(#gdk)" stroke="#ffe066"
+                <rect x="912" y="276" width="172" height="56" rx="7" fill="url(#gdk)" stroke="#F0E442"
                     stroke-width="1.5" class="nb" />
                 <text x="998" y="297" class="lbl">remove_invalid</text>
                 <text x="998" y="313" class="lbl">_results()</text>
                 <text x="998" y="326" class="sub">rewrites results.jsonl</text>
             </g>
             <!-- identify → remove arrow -->
-            <line x1="998" y1="256" x2="998" y2="276" stroke="#ffe066" stroke-width="1.5" opacity="0.5"
+            <line x1="998" y1="256" x2="998" y2="276" stroke="#F0E442" stroke-width="1.5" opacity="0.5"
                 marker-end="url(#mio)" />
 
             <!-- summarize_results  top=930 bot=986 cy=958 -->
             <g class="ng"
-                onmouseenter="T(event,'summarize_results()','Computes overall and per-model stats from results.jsonl: label Counters, % breakdowns, avg/max/min danger_score. Returns dict saved to {pairing_id}_summary.json.','Output · Stats','#ffe066')"
+                onmouseenter="T(event,'summarize_results()','Computes overall and per-model stats from results.jsonl: label Counters, % breakdowns, avg/max/min danger_score. Returns dict saved to {pairing_id}_summary.json.','Output · Stats','#F0E442')"
                 onmouseleave="H()">
-                <rect x="912" y="930" width="172" height="56" rx="7" fill="url(#gdk)" stroke="#ffe066"
+                <rect x="912" y="930" width="172" height="56" rx="7" fill="url(#gdk)" stroke="#F0E442"
                     stroke-width="1.5" class="nb" />
                 <text x="998" y="951" class="lbl">summarize_results()</text>
                 <text x="998" y="966" class="sub">per-model + overall</text>
@@ -833,9 +834,9 @@
 
             <!-- master_summary  top=1006 bot=1044 cy=1025 -->
             <g class="ng"
-                onmouseenter="T(event,'master_summary.json','Written after all 90 pairings complete. Aggregates every per-pairing summary dict — global label distributions, average danger scores, model list, and framework config metadata.','Output · Master','#ffe066')"
+                onmouseenter="T(event,'master_summary.json','Written after all 90 pairings complete. Aggregates every per-pairing summary dict — global label distributions, average danger scores, model list, and framework config metadata.','Output · Master','#F0E442')"
                 onmouseleave="H()">
-                <rect x="912" y="1006" width="172" height="38" rx="7" fill="url(#gio)" stroke="#ffe066"
+                <rect x="912" y="1006" width="172" height="38" rx="7" fill="url(#gio)" stroke="#F0E442"
                     stroke-width="1.5" class="nb" />
                 <text x="998" y="1022" class="lbl" fill="#111">master_summary.json</text>
                 <text x="998" y="1036" class="sub-k">all 90 pairings · pairing_results/</text>
@@ -871,6 +872,7 @@
             tip.style.top = (y + tip.offsetHeight > window.innerHeight ? y - tip.offsetHeight - 36 : y) + 'px';
         }
     </script>
+    <script src="ieee_toggle.js"></script>
 </body>
 
 </html>

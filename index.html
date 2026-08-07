@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Red Team Evaluation Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="ieee_style.css">
     <!-- Anti-FOUC: paint the dark background before anything else loads -->
     <style>html,body{background:#0a0c10;color:#e2e8f0;}</style>
     <style>
@@ -15,11 +16,11 @@
             --border: rgba(255, 255, 255, 0.1);
             --text-main: #e2e8f0;
             --text-dim: #94a3b8;
-            --accent-primary: #00f2fe;
-            --accent-secondary: #4facfe;
-            --safe: #10b981;
-            --danger: #ef4444;
-            --warn: #f59e0b;
+            --accent-primary: #56B4E9;
+            --accent-secondary: #0072B2;
+            --safe: #56B4E9;
+            --danger: #D55E00;
+            --warn: #F0E442;
         }
 
         * {
@@ -807,6 +808,60 @@
             letter-spacing: 0.05em;
         }
 
+        /* Distribution summary table */
+        .dist-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 18px;
+            font-size: 0.82em;
+        }
+        .dist-table th {
+            text-align: left;
+            padding: 7px 10px;
+            color: var(--text-dim);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85em;
+        }
+        .dist-table td {
+            padding: 7px 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            color: var(--text-main);
+        }
+        .dist-table tr:last-child td {
+            border-bottom: none;
+        }
+        .dist-table tr:hover td {
+            background: rgba(255,255,255,0.04);
+        }
+        .dist-table .swatch {
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            margin-right: 7px;
+            vertical-align: middle;
+            flex-shrink: 0;
+        }
+        .dist-table .pct-bar-wrap {
+            width: 90px;
+            height: 6px;
+            background: rgba(255,255,255,0.07);
+            border-radius: 3px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .dist-table .pct-bar {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.4s ease;
+        }
+        .dist-table .num { font-variant-numeric: tabular-nums; font-weight: 600; }
+        .dist-table .pct-text { color: var(--text-dim); font-size: 0.9em; }
+
         /* Heatmap table dark-mode */
         .heatmap-table {
             width: 100%;
@@ -881,6 +936,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="ieee_style.css">
 </head>
 
 <body>
@@ -944,7 +1000,7 @@
             <div id="loadProgress" style="display:none; margin-top:12px;">
                 <div style="background:rgba(255,255,255,0.08); border-radius:6px; overflow:hidden; height:6px;">
                     <div id="loadProgressBar"
-                        style="background:linear-gradient(135deg,#00f2fe,#4facfe); height:100%; width:0%; transition:width 0.3s;">
+                        style="background:linear-gradient(135deg,#56B4E9,#0072B2); height:100%; width:0%; transition:width 0.3s;">
                     </div>
                 </div>
                 <div id="loadProgressText" style="font-size:0.85em; color:#94a3b8; margin-top:6px;"></div>
@@ -1010,12 +1066,14 @@
                     <div class="chart-wrapper">
                         <canvas id="labelChart"></canvas>
                     </div>
+                    <div id="labelTable"></div>
                 </div>
                 <div class="chart-container">
                     <h2>Category Distribution</h2>
                     <div class="chart-wrapper">
                         <canvas id="categoryChart"></canvas>
                     </div>
+                    <div id="categoryTable"></div>
                 </div>
             </div>
 
@@ -1708,12 +1766,49 @@
         // Chart instances
         let labelChart, categoryChart, modelPassFailChart, categoryPassFailChart, trendChart, cumulativeDangerChart, dangerScoreChart, dangerDistChart;
 
-        const CHART_COLORS = ['#00f2fe', '#4facfe', '#a78bfa', '#34d399', '#fb923c', '#f472b6', '#60a5fa', '#facc15', '#2dd4bf', '#f87171'];
+        const CHART_COLORS = [
+            '#0072B2', '#009E73', '#D55E00', '#CC79A7', '#E69F00', '#56B4E9', '#F0E442', 
+            '#000000', '#555555', '#888888', '#AAAAAA', '#CCCCCC'
+        ];
+        const CAT_COLORS = [
+            '#CC79A7', '#009E73', '#E69F00', '#0072B2', '#56B4E9', '#D55E00', '#F0E442'
+        ];
         const AXIS_OPTS = { 
             grid: { color: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.06)' }, 
             ticks: { color: '#64748b' },
             title: { color: '#94a3b8', font: { size: 11, weight: 600 } }
         };
+
+        function createPattern(color, type) {
+            const canvas = document.createElement('canvas');
+            const size = 12;
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = color;
+            ctx.fillRect(0, 0, size, size);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 1.5;
+            
+            if (type === 'diagonal') {
+                ctx.beginPath(); ctx.moveTo(0, size); ctx.lineTo(size, 0); ctx.stroke();
+            } else if (type === 'dots') {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.beginPath(); ctx.arc(size/2, size/2, 2, 0, Math.PI * 2); ctx.fill();
+            } else if (type === 'cross') {
+                ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(size, size); ctx.moveTo(0, size); ctx.lineTo(size, 0); ctx.stroke();
+            } else if (type === 'horizontal') {
+                ctx.beginPath(); ctx.moveTo(0, size/2); ctx.lineTo(size, size/2); ctx.stroke();
+            } else if (type === 'vertical') {
+                ctx.beginPath(); ctx.moveTo(size/2, 0); ctx.lineTo(size/2, size); ctx.stroke();
+            } else if (type === 'grid') {
+                ctx.beginPath(); 
+                ctx.moveTo(0, size/2); ctx.lineTo(size, size/2);
+                ctx.moveTo(size/2, 0); ctx.lineTo(size/2, size);
+                ctx.stroke();
+            }
+            return ctx.createPattern(canvas, 'repeat');
+        }
 
         function updateCharts() {
             updateLabelChart();
@@ -1729,10 +1824,84 @@
 
         function createDoughnutChart(id, labels, data, colors) {
             const ctx = document.getElementById(id).getContext('2d');
+            const total = data.reduce((a, b) => a + b, 0);
+            
             return new Chart(ctx, {
                 type: 'doughnut',
-                data: { labels, datasets: [{ data, backgroundColor: colors.map(c => c + 'bb'), borderWidth: 1 }] },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'right' } } }
+                data: { 
+                    labels: labels, 
+                    datasets: [{ 
+                        data, 
+                        backgroundColor: colors,
+                        borderColor: '#0a0c10',
+                        borderWidth: 2,
+                        hoverBorderColor: '#ffffff',
+                        hoverBorderWidth: 2
+                    }] 
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    cutout: '65%', 
+                    plugins: { 
+                        legend: { 
+                            position: 'right',
+                            labels: {
+                                padding: 15,
+                                color: '#94a3b8',
+                                font: { size: 11, weight: 600 },
+                                generateLabels: (chart) => {
+                                    const data = chart.data;
+                                    return data.labels.map((label, i) => {
+                                        const val = data.datasets[0].data[i];
+                                        const pct = total ? (val / total * 100).toFixed(1) : 0;
+                                        return {
+                                            text: `${label} (${pct}%)`,
+                                            fillStyle: data.datasets[0].backgroundColor[i],
+                                            strokeStyle: 'rgba(255,255,255,0.2)',
+                                            lineWidth: 1,
+                                            hidden: !chart.getDataVisibility(i),
+                                            index: i
+                                        };
+                                    });
+                                }
+                            },
+                            onClick: (e, legendItem, legend) => {
+                                legend.chart.toggleDataVisibility(legendItem.index);
+                                legend.chart.update();
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const val = context.raw;
+                                    const pct = total ? (val / total * 100).toFixed(1) : 0;
+                                    return ` ${context.label}: ${val.toLocaleString()} (${pct}%)`;
+                                }
+                            }
+                        }
+                    } 
+                },
+                plugins: [{
+                    id: 'centerText',
+                    afterDraw: (chart) => {
+                        const { ctx, chartArea: { left, right, top, bottom, width, height } } = chart;
+                        ctx.save();
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        
+                        // "TOTAL" label
+                        ctx.font = 'bold 11px sans-serif';
+                        ctx.fillStyle = '#94a3b8';
+                        ctx.fillText('TOTAL', left + width / 2, top + height / 2 - 10);
+                        
+                        // Total value
+                        ctx.font = 'bold 18px sans-serif';
+                        ctx.fillStyle = '#e2e8f0';
+                        ctx.fillText(total.toLocaleString(), left + width / 2, top + height / 2 + 10);
+                        ctx.restore();
+                    }
+                }]
             });
         }
 
@@ -1752,8 +1921,35 @@
                 data = [lc.safe_refusal || 0, lc.partial_compliance || 0, lc.policy_violation || 0];
             } else return;
 
+            const baseColors = [
+                { c: '#56B4E9', p: null },         // Safe
+                { c: '#F0E442', p: 'dots' },       // Partial
+                { c: '#D55E00', p: 'diagonal' }   // Violation
+            ];
+
             if (labelChart) labelChart.destroy();
-            labelChart = createDoughnutChart('labelChart', labels, data, ['#10b981', '#f59e0b', '#ef4444']);
+            labelChart = createDoughnutChart('labelChart', labels, data, baseColors.map(b => b.p ? createPattern(b.c, b.p) : b.c));
+
+            // Build summary table
+            const total = data.reduce((a, b) => a + b, 0);
+            const labelEl = document.getElementById('labelTable');
+            if (labelEl && total > 0) {
+                labelEl.innerHTML = `<table class="dist-table">
+                    <thead><tr><th>Category</th><th>Count</th><th>Share</th><th style="min-width:100px"></th></tr></thead>
+                    <tbody>${labels.map((l, i) => {
+                        const pct = total ? (data[i] / total * 100) : 0;
+                        const symbol = i === 0 ? '✓' : (i === 1 ? '•' : '✗');
+                        const color = baseColors[i].c;
+                        return `<tr>
+                            <td><span class="swatch" style="background:${color}; display:inline-flex; align-items:center; justify-content:center; color:rgba(0,0,0,0.5); font-weight:bold; font-size:10px">${symbol}</span>${l}</td>
+                            <td class="num">${data[i].toLocaleString()}</td>
+                            <td class="pct-text">${pct.toFixed(1)}%</td>
+                            <td><span class="pct-bar-wrap"><span class="pct-bar" style="width:${pct}%;background:${color}"></span></span></td>
+                        </tr>`;
+                    }).join('')}</tbody>
+                    <tfoot><tr><td style="color:var(--text-dim);font-size:0.85em" colspan="4">Total: ${total.toLocaleString()} responses</td></tr></tfoot>
+                </table>`;
+            }
         }
 
         function updateCategoryChart() {
@@ -1771,58 +1967,147 @@
                 labels = sorted.map(e => e[0].replace(/_/g, ' ')); data = sorted.map(e => e[1].total);
             } else return;
 
+            const catPatterns = ['horizontal', 'vertical', 'grid', 'diagonal', 'cross'];
+            const colors = labels.map((_, i) => {
+                const c = CAT_COLORS[i % CAT_COLORS.length];
+                const p = catPatterns[i % catPatterns.length];
+                return createPattern(c, p);
+            });
+
             if (categoryChart) categoryChart.destroy();
-            categoryChart = createDoughnutChart('categoryChart', labels, data, CHART_COLORS);
+            categoryChart = createDoughnutChart('categoryChart', labels, data, colors);
+
+            // Build summary table (top 10 rows to avoid overflow)
+            const total = data.reduce((a, b) => a + b, 0);
+            const catEl = document.getElementById('categoryTable');
+            if (catEl && total > 0) {
+                const topLabels = labels.slice(0, 10);
+                const topData   = data.slice(0, 10);
+                const rest = data.slice(10).reduce((a, b) => a + b, 0);
+                catEl.innerHTML = `<table class="dist-table">
+                    <thead><tr><th>Category</th><th>Count</th><th>Share</th><th style="min-width:100px"></th></tr></thead>
+                    <tbody>${topLabels.map((l, i) => {
+                        const pct = total ? (topData[i] / total * 100) : 0;
+                        const color = CHART_COLORS[i % CHART_COLORS.length];
+                        return `<tr>
+                            <td><span class="swatch" style="background:${color}"></span>${l}</td>
+                            <td class="num">${topData[i].toLocaleString()}</td>
+                            <td class="pct-text">${pct.toFixed(1)}%</td>
+                            <td><span class="pct-bar-wrap"><span class="pct-bar" style="width:${pct}%;background:${color}"></span></span></td>
+                        </tr>`;
+                    }).join('')}${rest > 0 ? `<tr><td style="color:var(--text-dim)"><em>+ ${labels.length - 10} more</em></td><td class="num">${rest.toLocaleString()}</td><td class="pct-text">${(rest/total*100).toFixed(1)}%</td><td></td></tr>` : ''}</tbody>
+                    <tfoot><tr><td style="color:var(--text-dim);font-size:0.85em" colspan="4">Total: ${total.toLocaleString()} responses</td></tr></tfoot>
+                </table>`;
+            }
         }
 
         function updateModelPassFailChart() {
-            let models, passed, failed;
+            let models, passedData, failedData, totals;
             if (isRawLoaded) {
                 const stats = {};
                 filteredData.forEach(d => {
-                    if (!stats[d.target_model]) stats[d.target_model] = { p: 0, f: 0 };
+                    if (!stats[d.target_model]) stats[d.target_model] = { p: 0, f: 0, t: 0 };
                     const l = (d.label || '').toLowerCase();
+                    stats[d.target_model].t++;
                     if (l.includes('safe') || l === 'refusal') stats[d.target_model].p++; else stats[d.target_model].f++;
                 });
-                models = Object.keys(stats).sort();
-                passed = models.map(m => stats[m].p); failed = models.map(m => stats[m].f);
+                models = Object.keys(stats).sort((a, b) => (stats[b].p / stats[b].t) - (stats[a].p / stats[a].t));
+                passedData = models.map(m => (stats[m].p / stats[m].t * 100));
+                failedData = models.map(m => (stats[m].f / stats[m].t * 100));
+                totals = models.map(m => stats[m].t);
             } else if (currentAgg) {
-                models = Object.keys(currentAgg.model_stats).sort();
-                passed = models.map(m => currentAgg.model_stats[m].safe);
-                failed = models.map(m => currentAgg.model_stats[m].total - currentAgg.model_stats[m].safe);
+                models = Object.keys(currentAgg.model_stats).sort((a, b) => currentAgg.model_stats[b].pass_rate_pct - currentAgg.model_stats[a].pass_rate_pct);
+                passedData = models.map(m => currentAgg.model_stats[m].pass_rate_pct);
+                failedData = models.map(m => 100 - currentAgg.model_stats[m].pass_rate_pct);
+                totals = models.map(m => currentAgg.model_stats[m].total);
             } else return;
 
             if (modelPassFailChart) modelPassFailChart.destroy();
             modelPassFailChart = new Chart(document.getElementById('modelPassFailChart'), {
                 type: 'bar',
-                data: { labels: models, datasets: [{ label: 'Safe', data: passed, backgroundColor: '#10b981' }, { label: 'Violation', data: failed, backgroundColor: '#ef4444' }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ...AXIS_OPTS }, y: { stacked: true, ...AXIS_OPTS } } }
+                data: { 
+                    labels: models.map((m, i) => `${m} (N=${totals[i]})`), 
+                    datasets: [
+                        { label: 'Safe %', data: passedData, backgroundColor: '#56B4E9' }, 
+                        { label: 'Violation %', data: failedData, backgroundColor: createPattern('#D55E00', 'diagonal') }
+                    ] 
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        x: { stacked: true, ...AXIS_OPTS }, 
+                        y: { stacked: true, min: 0, max: 100, ticks: { callback: v => v + '%' }, ...AXIS_OPTS } 
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => {
+                                    const total = totals[ctx.dataIndex];
+                                    const val = ctx.raw;
+                                    const count = Math.round((val / 100) * total);
+                                    return ` ${ctx.dataset.label.replace(' %', '')}: ${count.toLocaleString()} (${val.toFixed(1)}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
             });
         }
 
         function updateCategoryPassFailChart() {
-            let cats, passed, failed;
+            let cats, passedData, failedData, totals;
             if (isRawLoaded) {
                 const stats = {};
                 filteredData.forEach(d => {
                     const c = d.attack_category || 'Other';
-                    if (!stats[c]) stats[c] = { p: 0, f: 0 };
+                    if (!stats[c]) stats[c] = { p: 0, f: 0, t: 0 };
                     const l = (d.label || '').toLowerCase();
+                    stats[c].t++;
                     if (l.includes('safe') || l === 'refusal') stats[c].p++; else stats[c].f++;
                 });
-                cats = Object.keys(stats).sort();
-                passed = cats.map(c => stats[c].p); failed = cats.map(c => stats[c].f);
+                cats = Object.keys(stats).sort((a, b) => (stats[b].p / stats[b].t) - (stats[a].p / stats[a].t));
+                passedData = cats.map(c => (stats[c].p / stats[c].t * 100));
+                failedData = cats.map(c => (stats[c].f / stats[c].t * 100));
+                totals = cats.map(c => stats[c].t);
             } else if (currentAgg) {
-                cats = Object.keys(currentAgg.category_stats).sort();
-                passed = cats.map(c => currentAgg.category_stats[c].safe);
-                failed = cats.map(c => (currentAgg.category_stats[c].total - currentAgg.category_stats[c].safe));
+                cats = Object.keys(currentAgg.category_stats).sort((a, b) => currentAgg.category_stats[b].pass_rate_pct - currentAgg.category_stats[a].pass_rate_pct);
+                passedData = cats.map(c => currentAgg.category_stats[c].pass_rate_pct);
+                failedData = cats.map(c => 100 - currentAgg.category_stats[c].pass_rate_pct);
+                totals = cats.map(c => currentAgg.category_stats[c].total);
             } else return;
 
             if (categoryPassFailChart) categoryPassFailChart.destroy();
             categoryPassFailChart = new Chart(document.getElementById('categoryPassFailChart'), {
                 type: 'bar',
-                data: { labels: cats.map(c => c.replace(/_/g, ' ')), datasets: [{ label: 'Safe', data: passed, backgroundColor: '#10b981' }, { label: 'Violation', data: failed, backgroundColor: '#ef4444' }] },
-                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ...AXIS_OPTS }, y: { stacked: true, ...AXIS_OPTS } } }
+                data: { 
+                    labels: cats.map((c, i) => `${c.replace(/_/g, ' ')} (N=${totals[i]})`), 
+                    datasets: [
+                        { label: 'Safe %', data: passedData, backgroundColor: '#56B4E9' }, 
+                        { label: 'Violation %', data: failedData, backgroundColor: createPattern('#D55E00', 'diagonal') }
+                    ] 
+                },
+                options: { 
+                    indexAxis: 'y', 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        x: { stacked: true, min: 0, max: 100, ticks: { callback: v => v + '%' }, ...AXIS_OPTS }, 
+                        y: { stacked: true, ...AXIS_OPTS } 
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => {
+                                    const total = totals[ctx.dataIndex];
+                                    const val = ctx.raw;
+                                    const count = Math.round((val / 100) * total);
+                                    return ` ${ctx.dataset.label.replace(' %', '')}: ${count.toLocaleString()} (${val.toFixed(1)}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
             });
         }
 
@@ -1851,15 +2136,19 @@
             models.forEach(m => {
                 h += `<tr><td class="model-name">${m}</td>` + cats.map(c => {
                     const r = map[m][c];
-                    let bg = 'rgba(255,255,255,0.02)', val = 'N/A';
+                    let bg = 'rgba(255,255,255,0.02)', val = 'N/A', symbol = '', textColor = 'inherit';
                     if (r !== null) {
-                        val = (r * 100).toFixed(0) + '%';
-                        if (r >= 0.9) bg = 'rgba(16, 185, 129, 0.4)';
-                        else if (r >= 0.7) bg = 'rgba(16, 185, 129, 0.2)';
-                        else if (r >= 0.5) bg = 'rgba(245, 158, 11, 0.2)';
-                        else bg = 'rgba(239, 68, 68, 0.3)';
+                        const pct = r * 100;
+                        val = pct.toFixed(0) + '%';
+                        if (r >= 0.9) { bg = 'rgba(86, 180, 233, 0.5)'; symbol = '✓'; textColor = '#fff'; }
+                        else if (r >= 0.7) { bg = 'rgba(86, 180, 233, 0.25)'; symbol = '•'; textColor = '#e2e8f0'; }
+                        else if (r >= 0.5) { bg = 'rgba(240, 228, 66, 0.3)'; symbol = '•'; textColor = '#e2e8f0'; }
+                        else { bg = 'rgba(213, 94, 0, 0.4)'; symbol = '✗'; textColor = '#fff'; }
                     }
-                    return `<td style="background:${bg}">${val}</td>`;
+                    return `<td style="background:${bg}; color:${textColor}; position:relative;">
+                        <div style="font-size:10px; font-weight:800;">${val}</div>
+                        <div style="font-size:11px; opacity:0.8; margin-top:-2px;">${symbol}</div>
+                    </td>`;
                 }).join('') + '</tr>';
             });
             cont.innerHTML = h + '</tbody></table>';
@@ -1872,17 +2161,23 @@
                 rounds = [...new Set(allData.map(d => d.round))].sort((a,b) => a-b).filter((_, i) => i % 5 === 0);
                 datasets = models.map((m, idx) => {
                     const modelRows = allData.filter(d => d.target_model === m);
-                    return { label: m, borderColor: CHART_COLORS[idx % 10], pointRadius: 0, tension: 0.1, data: rounds.map(r => {
-                        const cum = modelRows.filter(d => d.round <= r);
-                        if (cum.length === 0) return null;
-                        const safe = cum.filter(d => (d.label||'').toLowerCase().includes('safe') || d.label === 'refusal').length;
-                        return (safe / cum.length) * 100;
-                    })};
+                    return { 
+                        label: m, borderColor: CHART_COLORS[idx % 10], pointRadius: 0, tension: 0.1, 
+                        borderDash: idx % 3 === 1 ? [5, 5] : (idx % 3 === 2 ? [2, 2] : []),
+                        data: rounds.map(r => {
+                            const cum = modelRows.filter(d => d.round <= r);
+                            if (cum.length === 0) return null;
+                            const safe = cum.filter(d => (d.label||'').toLowerCase().includes('safe') || d.label === 'refusal').length;
+                            return (safe / cum.length) * 100;
+                        })
+                    };
                 });
             } else if (currentAgg) {
                 rounds = Object.keys(Object.values(currentAgg.trend)[0] || {}).map(Number).sort((a,b)=>a-b);
                 datasets = currentAgg.meta.models.map((m, idx) => ({
-                    label: m, borderColor: CHART_COLORS[idx % 10], pointRadius: 0, tension: 0.1, data: rounds.map(r => currentAgg.trend[m]?.[r] ?? null)
+                    label: m, borderColor: CHART_COLORS[idx % 10], pointRadius: 0, tension: 0.1,
+                    borderDash: idx % 3 === 1 ? [5, 5] : (idx % 3 === 2 ? [2, 2] : []),
+                    data: rounds.map(r => currentAgg.trend[m]?.[r] ?? null)
                 }));
             } else return;
 
@@ -1934,7 +2229,7 @@
 
             if (dangerScoreChart) dangerScoreChart.destroy();
             dangerScoreChart = new Chart(document.getElementById('dangerScoreChart'), {
-                type: 'bar', data: { labels, datasets: [{ data, backgroundColor: '#ef4444' }] },
+                type: 'bar', data: { labels, datasets: [{ data, backgroundColor: '#D55E00' }] },
                 options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 10, ...AXIS_OPTS }, x: AXIS_OPTS }, plugins: { legend: { display: false } } }
             });
         }
@@ -1954,10 +2249,10 @@
         }
 
         function getDangerScoreColor(s) {
-            if (s >= 8) return '#ef4444'; 
-            if (s >= 6) return '#f59e0b'; 
+            if (s >= 8) return '#D55E00'; 
+            if (s >= 6) return '#F0E442'; 
             if (s >= 4) return '#fbbf24'; 
-            return '#10b981';
+            return '#56B4E9';
         }
 
         function updateLeaderboard() {
@@ -1995,7 +2290,7 @@
                     <td>
                         <div style="display:flex; align-items:center; gap:8px;">
                             <div style="flex:1; height:6px; background:rgba(255,255,255,0.05); border-radius:3px; overflow:hidden;">
-                                <div style="width:${s.passRate}%; height:100%; background:linear-gradient(90deg,#10b981,#34d399);"></div>
+                                <div style="width:${s.passRate}%; height:100%; background:linear-gradient(90deg,#56B4E9,#34d399);"></div>
                             </div>
                             <span style="font-weight:700; font-size:0.9em;">${Number(s.passRate).toFixed(1)}%</span>
                         </div>
@@ -2039,8 +2334,8 @@
                 <tr id="details-row-${start+i}" class="response-detail-row">
                     <td colspan="7">
                         <div class="response-detail-content">
-                            <h4 style="color:#00f2fe; margin-bottom:4px;">Model Response:</h4><p style="color:var(--text-main); margin-bottom:12px;">${d.model_response}</p>
-                            <h4 style="color:#00f2fe; margin-bottom:4px;">Danger Analysis:</h4><p style="font-style:italic; font-size:0.95em;">${d.reason}</p>
+                            <h4 style="color:#56B4E9; margin-bottom:4px;">Model Response:</h4><p style="color:var(--text-main); margin-bottom:12px;">${d.model_response}</p>
+                            <h4 style="color:#56B4E9; margin-bottom:4px;">Danger Analysis:</h4><p style="font-style:italic; font-size:0.95em;">${d.reason}</p>
                         </div>
                     </td>
                 </tr>
@@ -2093,6 +2388,7 @@
         // Initial call to setup state
         // (Handled by the DOMContentLoaded consolidated above)
     </script>
+    <script src="ieee_toggle.js"></script>
 </body>
 
 </html>
